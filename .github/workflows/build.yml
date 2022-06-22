@@ -12,7 +12,7 @@ env:
   GH_AUTH_TOKEN: ${{ secrets.GH_TOKEN }} # setting GH_TOKEN for the entire workflow
 
 jobs:
-  libmozc-updater:
+  libmozc-update-and-build-LIME:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -25,6 +25,12 @@ jobs:
         run: |
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
+      - name: Setup JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: 17
+          cache: 'gradle'
       - name: Clone libmozc
         run: git clone https://github.com/google/mozc.git
       - name: Clone libmozc UT dictionaries
@@ -68,24 +74,13 @@ jobs:
           cd ../../../
           find "$DST" -name "*.proto" -type f -exec sed -i \
             's|import "protocol/|import "packages/inputmethods/LatinIME/java/proto/protocol/|g' {} +
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Build
+        run: ./gradlew assembleRelease
       - name: Cleanup and Commit Changes
         run: |
           rm -rf mozc
           git add .
           git diff-index --quiet HEAD || git commit -m "LatinIME: Updated libmozc"
           git push
-  build:
-    needs: libmozc-updater
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup JDK 17
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'zulu'
-          java-version: 17
-          cache: 'gradle'
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-      - name: Build
-        run: ./gradlew assembleRelease
