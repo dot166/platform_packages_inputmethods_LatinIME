@@ -68,6 +68,7 @@ public class SettingsValues {
     public final boolean mKeyPreviewPopupOn;
     public final boolean mShowsVoiceInputKey;
     public final boolean mShowsPasteButton;
+    public final boolean mShowNumberRow;
     public final boolean mIncludesOtherImesInLanguageSwitchList;
     public final boolean mShowsLanguageSwitchKey;
     public final boolean mUseContactsDict;
@@ -142,6 +143,7 @@ public class SettingsValues {
                 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN;
         mShowsPasteButton = prefs.getBoolean(Settings.PREF_SHOW_PASTE_BUTTON,
                 res.getBoolean(R.bool.config_default_show_paste_button));
+        mShowNumberRow = prefs.getBoolean(Settings.PREF_SHOW_NUMBER_ROW, false);
         mIncludesOtherImesInLanguageSwitchList = Settings.ENABLE_SHOW_LANGUAGE_SWITCH_KEY_SETTINGS
                 ? prefs.getBoolean(Settings.PREF_INCLUDE_OTHER_IMES_IN_LANGUAGE_SWITCH_LIST, false)
                 : true /* forcibly */;
