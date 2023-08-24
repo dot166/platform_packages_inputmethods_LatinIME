@@ -24,8 +24,7 @@
     <switch>
         <default>
             <Key
-                latin:keyStyle="emojiKeyStyle"
-                latin:keyWidth="10%p" />
+                latin:keyStyle="emojiKeyStyle" />
         </default>
     </switch>
 </merge>

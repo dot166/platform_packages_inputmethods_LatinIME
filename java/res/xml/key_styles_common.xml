@@ -81,18 +81,15 @@
         <case latin:keyboardTheme="ICS|KLP">
             <key-style
                 latin:styleName="emojiKeyStyle"
-                latin:keySpec="!icon/emoji_action_key|!code/key_emoji"
-                latin:keyActionFlags="noKeyPreview"
-                latin:backgroundType="action" />
+                latin:keySpec="!icon/emoji_normal_key|!code/key_emoji"
+                latin:keyActionFlags="noKeyPreview" />
         </case>
         <!-- keyboardTheme="LXXLight|LXXDark" -->
         <default>
             <key-style
                 latin:styleName="emojiKeyStyle"
-                latin:keySpec="!icon/emoji_action_key|!code/key_emoji"
-                latin:keyLabelFlags="keepBackgroundAspectRatio"
-                latin:keyActionFlags="noKeyPreview"
-                latin:backgroundType="action" />
+                latin:keySpec="!icon/emoji_normal_key|!code/key_emoji"
+                latin:keyActionFlags="noKeyPreview" />
         </default>
     </switch>
     <include
