@@ -43,15 +43,15 @@ public final class KeyboardTheme implements Comparable<KeyboardTheme> {
     public static final int THEME_ID_LXX_LIGHT = 3;
     public static final int THEME_ID_LXX_DARK = 4;
     public static final int THEME_ID_AUTO_DARK = 5;
-    public static final int DEFAULT_THEME_ID = THEME_ID_AUTO_DARK;
+    public static final int DEFAULT_THEME_ID = THEME_ID_ICS;
 
     private static KeyboardTheme[] AVAILABLE_KEYBOARD_THEMES;
 
     /* package private for testing */
     static final KeyboardTheme[] KEYBOARD_THEMES = {
         new KeyboardTheme(THEME_ID_ICS, "ICS", R.style.KeyboardTheme_ICS,
-                // This has never been selected because we support ICS or later.
-                VERSION_CODES.BASE),
+                // Default theme for jOS.
+                VERSION_CODES.UPSIDE_DOWN_CAKE),
         new KeyboardTheme(THEME_ID_KLP, "KLP", R.style.KeyboardTheme_KLP,
                 // Default theme for ICS, JB, and KLP.
                 VERSION_CODES.ICE_CREAM_SANDWICH),
