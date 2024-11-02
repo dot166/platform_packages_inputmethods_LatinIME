@@ -67,12 +67,15 @@ public class SettingsValues {
     public final boolean mSoundOn;
     public final boolean mKeyPreviewPopupOn;
     public final boolean mShowsVoiceInputKey;
+    public final boolean mShowNumberRow;
     public final boolean mIncludesOtherImesInLanguageSwitchList;
     public final boolean mShowsLanguageSwitchKey;
+    public final boolean mShowsEmojiKey;
     public final boolean mUseContactsDict;
     public final boolean mUsePersonalizedDicts;
     public final boolean mUseDoubleSpacePeriod;
     public final boolean mBlockPotentiallyOffensive;
+    public final boolean mSpaceTrackpadEnabled;
     // Use bigrams to predict the next word when there is no input for it yet
     public final boolean mBigramPredictionEnabled;
     public final boolean mGestureInputEnabled;
@@ -140,11 +143,13 @@ public class SettingsValues {
         mShowsVoiceInputKey = needsToShowVoiceInputKey(prefs, res)
                 && mInputAttributes.mShouldShowVoiceInputKey
                 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN;
+        mShowNumberRow = prefs.getBoolean(Settings.PREF_SHOW_NUMBER_ROW, false);
         mIncludesOtherImesInLanguageSwitchList = Settings.ENABLE_SHOW_LANGUAGE_SWITCH_KEY_SETTINGS
                 ? prefs.getBoolean(Settings.PREF_INCLUDE_OTHER_IMES_IN_LANGUAGE_SWITCH_LIST, false)
                 : true /* forcibly */;
         mShowsLanguageSwitchKey = Settings.ENABLE_SHOW_LANGUAGE_SWITCH_KEY_SETTINGS
                 ? Settings.readShowsLanguageSwitchKey(prefs) : true /* forcibly */;
+        mShowsEmojiKey = prefs.getBoolean(Settings.PREF_SHOW_EMOJI_KEY, false);
         mUseContactsDict = prefs.getBoolean(Settings.PREF_KEY_USE_CONTACTS_DICT, true);
         mUsePersonalizedDicts = prefs.getBoolean(Settings.PREF_KEY_USE_PERSONALIZED_DICTS, false);
         mUseDoubleSpacePeriod = prefs.getBoolean(Settings.PREF_KEY_USE_DOUBLE_SPACE_PERIOD, true)
@@ -222,6 +227,7 @@ public class SettingsValues {
             new TargetPackageInfoGetterTask(context, mAppWorkarounds)
                     .execute(mInputAttributes.mTargetApplicationPackageName);
         }
+        mSpaceTrackpadEnabled = Settings.readSpaceTrackpadEnabled(prefs);
     }
 
     public boolean isMetricsLoggingEnabled() {

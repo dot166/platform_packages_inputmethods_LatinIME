@@ -77,6 +77,7 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
             BuildCompatUtils.EFFECTIVE_SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
     public static final String PREF_SHOW_LANGUAGE_SWITCH_KEY =
             "pref_show_language_switch_key";
+    public static final String PREF_SHOW_EMOJI_KEY = "pref_show_emoji_key";
     public static final String PREF_INCLUDE_OTHER_IMES_IN_LANGUAGE_SWITCH_LIST =
             "pref_include_other_imes_in_language_switch_list";
     public static final String PREF_CUSTOM_INPUT_STYLES = "custom_input_styles";
@@ -100,6 +101,7 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
     public static final String PREF_KEY_IS_INTERNAL = "pref_key_is_internal";
 
     public static final String PREF_ENABLE_METRICS_LOGGING = "pref_enable_metrics_logging";
+    public static final String PREF_SHOW_NUMBER_ROW = "pref_show_number_row";
     // This preference key is deprecated. Use {@link #PREF_SHOW_LANGUAGE_SWITCH_KEY} instead.
     // This is being used only for the backward compatibility.
     private static final String PREF_SUPPRESS_LANGUAGE_SWITCH_KEY =
@@ -111,6 +113,9 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
             "pref_last_used_personalization_dict_wiped_time";
     private static final String PREF_CORPUS_HANDLES_FOR_PERSONALIZATION =
             "pref_corpus_handles_for_personalization";
+
+    // Space bar trackpad slider
+    public static final String PREF_SPACE_TRACKPAD = "pref_space_trackpad";
 
     // Emoji
     public static final String PREF_EMOJI_RECENT_KEYS = "emoji_recent_keys";
@@ -342,11 +347,19 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
         return (milliseconds != UNDEFINED_PREFERENCE_VALUE_INT) ? milliseconds : defaultValue;
     }
 
+    public static boolean readShowNumberRow(final SharedPreferences prefs) {
+        return prefs.getBoolean(PREF_SHOW_NUMBER_ROW, false);
+    }
+
     public static float readKeyboardHeight(final SharedPreferences prefs,
             final float defaultValue) {
         final float percentage = prefs.getFloat(
                 DebugSettings.PREF_KEYBOARD_HEIGHT_SCALE, UNDEFINED_PREFERENCE_VALUE_FLOAT);
         return (percentage != UNDEFINED_PREFERENCE_VALUE_FLOAT) ? percentage : defaultValue;
+    }
+
+    public static boolean readSpaceTrackpadEnabled(final SharedPreferences prefs) {
+        return prefs.getBoolean(PREF_SPACE_TRACKPAD, true);
     }
 
     public static boolean readUseFullscreenMode(final Resources res) {

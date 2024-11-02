@@ -579,4 +579,15 @@ Tip: You can download and remove dictionaries by going to &lt;b>Languages&#160;&
     <string name="user_dict_fast_scroll_alphabet">\u0020ABCDEFGHIJKLMNOPQRSTUVWXYZ</string>
 
     <string name="keyboard_theme_follow_system">Follow system settings</string>
+
+    <!-- Preference item for enabling the number row -->
+    <string name="number_row">Number row</string>
+    <string name="number_row_summary">Always show a number row for all layouts that feature 4 rows of keys</string>
+    <!-- Preference item for the space bar track pad -->
+    <string name="space_trackpad">Space bar trackpad</string>
+    <string name="space_trackpad_summary">Swipe on the spacebar to move the cursor</string>
+
+    <!-- Preference item for always showing the emoji key -->
+    <string name="show_emoji_key">Show emoji key</string>
+    <string name="show_emoji_key_summary">Always show emoji key. When this option is enabled, the language switch key cannot be shown.</string>
 </resources>
