@@ -18,6 +18,7 @@ package com.android.inputmethod.keyboard.emoji;
 
 import android.content.Context;
 import android.content.res.Resources;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -67,6 +68,13 @@ final class EmojiLayoutParams {
         lp.height = mEmojiKeyboardHeight;
         lp.bottomMargin = mEmojiPagerBottomMargin;
         vp.setLayoutParams(lp);
+    }
+
+    public void setRecyclerProperties(final RecyclerView rv) {
+        final LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) rv.getLayoutParams();
+        lp.height = mEmojiKeyboardHeight;
+        lp.bottomMargin = mEmojiPagerBottomMargin;
+        rv.setLayoutParams(lp);
     }
 
     public void setCategoryPageIdViewProperties(final View v) {
