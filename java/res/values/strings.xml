@@ -596,4 +596,43 @@ Tip: You can download and remove dictionaries by going to &lt;b>Languages&#160;&
     <!-- Preference item for enabling longpress key hints -->
     <string name="show_longpress_hints">Show long-press key hints</string>
     <string name="show_longpress_hints_summary">Shows long-press hints for supported keys</string>
+    <!-- Kaomoji category titles -->
+    <string name="all">All</string>
+    <string name="joy">Joy</string>
+    <string name="love">Love</string>
+    <string name="embarrassment">Embarrassment</string>
+    <string name="sympathy">Sympathy</string>
+    <string name="dissatisfaction">Dissatisfaction</string>
+    <string name="anger">Anger</string>
+    <string name="sadness">Sadness</string>
+    <string name="pain">Pain</string>
+    <string name="fear">Fear</string>
+    <string name="indifference">Indifference</string>
+    <string name="confusion">Confusion</string>
+    <string name="doubt">Doubt</string>
+    <string name="surprise">Surprise</string>
+    <string name="greeting">Greeting</string>
+    <string name="hugging">Hugging</string>
+    <string name="winking">Winking</string>
+    <string name="apologizing">Apologizing</string>
+    <string name="nosebleeding">Nosebleeding</string>
+    <string name="hiding">Hiding</string>
+    <string name="writing">Writing</string>
+    <string name="running">Running</string>
+    <string name="sleeping">Sleeping</string>
+    <string name="cat">Cat</string>
+    <string name="bear">Bear</string>
+    <string name="dog">Dog</string>
+    <string name="rabbit">Rabbit</string>
+    <string name="pig">Pig</string>
+    <string name="bird">Bird</string>
+    <string name="spider">Spider</string>
+    <string name="friends">Friends</string>
+    <string name="enemies">Enemies</string>
+    <string name="magic">Magic</string>
+    <string name="food">Food</string>
+    <string name="music">Music</string>
+    <string name="games">Games</string>
+    <string name="faces">Faces</string>
+    <string name="special">Special</string>
 </resources>

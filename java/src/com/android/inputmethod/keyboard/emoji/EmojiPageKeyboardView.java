@@ -44,6 +44,7 @@ final class EmojiPageKeyboardView extends KeyboardView implements
     public interface OnKeyEventListener {
         public void onPressKey(Key key);
         public void onReleaseKey(Key key);
+        public void onKaomojiPress(String kaomoji);
     }
 
     private static final OnKeyEventListener EMPTY_LISTENER = new OnKeyEventListener() {
@@ -51,6 +52,8 @@ final class EmojiPageKeyboardView extends KeyboardView implements
         public void onPressKey(final Key key) {}
         @Override
         public void onReleaseKey(final Key key) {}
+        @Override
+        public void onKaomojiPress(final String kaomoji) {}
     };
 
     private OnKeyEventListener mListener = EMPTY_LISTENER;
