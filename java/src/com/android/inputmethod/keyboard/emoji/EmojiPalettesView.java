@@ -22,10 +22,10 @@ import static com.android.inputmethod.latin.common.Constants.NOT_A_COORDINATE;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
-import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 import android.preference.PreferenceManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 import android.util.AttributeSet;
 import android.util.Pair;
@@ -33,6 +33,7 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -53,6 +54,10 @@ import com.android.inputmethod.latin.R;
 import com.android.inputmethod.latin.RichInputMethodSubtype;
 import com.android.inputmethod.latin.common.Constants;
 import com.android.inputmethod.latin.utils.ResourceUtils;
+
+import com.google.android.flexbox.FlexDirection;
+import com.google.android.flexbox.FlexWrap;
+import com.google.android.flexbox.FlexboxLayoutManager;
 
 /**
  * View class to implement Emoji palettes.
@@ -91,6 +96,10 @@ public final class EmojiPalettesView extends LinearLayout implements OnTabChange
     private KeyboardActionListener mKeyboardActionListener = KeyboardActionListener.EMPTY_LISTENER;
 
     private final EmojiCategory mEmojiCategory;
+    public KaomojiAdapter mKaomojiAdapter;
+    private TabHost mTabHost2;
+    private int mTabTextColorSelected;
+    private int mTabTextColorUnselected;
 
     public EmojiPalettesView(final Context context, final AttributeSet attrs) {
         this(context, attrs, R.attr.emojiPalettesViewStyle);
@@ -142,6 +151,7 @@ public final class EmojiPalettesView extends LinearLayout implements OnTabChange
                 + getPaddingLeft() + getPaddingRight();
         final int height = ResourceUtils.getDefaultKeyboardHeight(res)
                 + res.getDimensionPixelSize(R.dimen.config_suggestions_strip_height)
+                + res.getDimensionPixelSize(R.dimen.config_suggestions_strip_height)
                 + getPaddingTop() + getPaddingBottom();
         setMeasuredDimension(width, height);
     }
@@ -163,6 +173,96 @@ public final class EmojiPalettesView extends LinearLayout implements OnTabChange
 
     @Override
     protected void onFinishInflate() {
+        TabHost tabHost = (TabHost)findViewById(R.id.emoji_panel_tabhost);
+        tabHost.setup();
+        final TabHost.TabSpec tspec = tabHost.newTabSpec("emoji");
+        tspec.setContent(R.id.emoji_keyboard_blank);
+        final ImageView iconView = (ImageView)LayoutInflater.from(getContext()).inflate(
+                R.layout.emoji_keyboard_tab_icon, null);
+        // TODO: Replace background color with its own setting rather than using the
+        //       category page indicator background as a workaround.
+        iconView.setBackgroundColor(mCategoryPageIndicatorBackground);
+        iconView.setImageResource(mEmojiCategory.getCategoryTabIcon(8));
+        iconView.setContentDescription(mEmojiCategory.getAccessibilityDescription(8));
+        tspec.setIndicator(iconView);
+        tabHost.addTab(tspec);
+        final TabHost.TabSpec tspec2 = tabHost.newTabSpec("kaomoji");
+        tspec2.setContent(R.id.emoji_keyboard_blank);
+        final ImageView iconView2 = (ImageView)LayoutInflater.from(getContext()).inflate(
+                R.layout.emoji_keyboard_tab_icon, null);
+        // TODO: Replace background color with its own setting rather than using the
+        //       category page indicator background as a workaround.
+        iconView2.setBackgroundColor(mCategoryPageIndicatorBackground);
+        iconView2.setImageResource(mEmojiCategory.getCategoryTabIcon(6));
+        iconView2.setContentDescription(mEmojiCategory.getAccessibilityDescription(6));
+        tspec2.setIndicator(iconView2);
+        tabHost.addTab(tspec2);
+        tabHost.setOnTabChangedListener(new OnTabChangeListener() {
+            @Override
+            public void onTabChanged(String tabId) {
+                if (tabId == "emoji") {
+                    findViewById(R.id.tab2_content).setVisibility(GONE);
+                    findViewById(R.id.tab1_content).setVisibility(VISIBLE);
+                } else if (tabId == "kaomoji") {
+                    findViewById(R.id.tab1_content).setVisibility(GONE);
+                    findViewById(R.id.tab2_content).setVisibility(VISIBLE);
+                }
+            }
+        });
+        final TabWidget tabWidgetOne = tabHost.getTabWidget();
+        tabWidgetOne.setStripEnabled(mCategoryIndicatorEnabled);
+        if (mCategoryIndicatorEnabled) {
+            // On TabWidget's strip, what looks like an indicator is actually a background.
+            // And what looks like a background are actually left and right drawables.
+            tabWidgetOne.setBackgroundResource(mCategoryIndicatorDrawableResId);
+            tabWidgetOne.setLeftStripDrawable(mCategoryIndicatorBackgroundResId);
+            tabWidgetOne.setRightStripDrawable(mCategoryIndicatorBackgroundResId);
+        }
+        mTabHost2 = (TabHost)findViewById(R.id.kaomoji_category_tabhost);
+        mTabHost2.setup();
+        final TabHost.TabSpec tspec20 = mTabHost2.newTabSpec("All");
+        tspec20.setContent(R.id.kaomoji_keyboard_dummy);
+        final Button button = new Button(getContext());
+        button.setText(R.string.all);
+        button.setBackground(null);
+        tspec20.setIndicator(button);
+        mTabHost2.addTab(tspec20);
+        for (int i = 0; i < KaomojiUtils.categoryName.size(); i++) {
+            final TabHost.TabSpec tspec21 = mTabHost2.newTabSpec(KaomojiUtils.categoryName.get(i));
+            tspec21.setContent(R.id.kaomoji_keyboard_dummy);
+            final Button button2 = new Button(getContext());
+            button2.setText(KaomojiUtils.categoryNameString.get(i));
+            button2.setBackground(null);
+            tspec21.setIndicator(button2);
+            mTabHost2.addTab(tspec21);
+        }
+        mTabHost2.setOnTabChangedListener(new OnTabChangeListener() {
+            @Override
+            public void onTabChanged(String tabId) {
+                updateTabTextColors();
+                mKaomojiAdapter.setData(KaomojiUtils.getKaomojiMap(getResources()).get(tabId));
+            }
+        });
+        final TabWidget tabWidgetTwo = mTabHost2.getTabWidget();
+        tabWidgetTwo.setStripEnabled(mCategoryIndicatorEnabled);
+        if (mCategoryIndicatorEnabled) {
+            // On TabWidget's strip, what looks like an indicator is actually a background.
+            // And what looks like a background are actually left and right drawables.
+            tabWidgetTwo.setBackgroundResource(mCategoryIndicatorDrawableResId);
+            tabWidgetTwo.setLeftStripDrawable(mCategoryIndicatorBackgroundResId);
+            tabWidgetTwo.setRightStripDrawable(mCategoryIndicatorBackgroundResId);
+        }
+        findViewById(R.id.tab1_content).setVisibility(VISIBLE);
+        mKaomojiAdapter = new KaomojiAdapter(this);
+        mKaomojiAdapter.setData(KaomojiUtils.getKaomojiMap(getResources()).get("All"));
+        mKaomojiAdapter.addListener(this);
+        RecyclerView recycler = (RecyclerView)findViewById(R.id.kaomojiRecycler);
+        recycler.setAdapter(mKaomojiAdapter);
+        FlexboxLayoutManager lm = new FlexboxLayoutManager(getContext());
+        lm.setFlexDirection(FlexDirection.ROW);
+        lm.setFlexWrap(FlexWrap.WRAP);
+        recycler.setLayoutManager(lm);
+        mEmojiLayoutParams.setRecyclerProperties(recycler);
         mTabHost = (TabHost)findViewById(R.id.emoji_category_tabhost);
         mTabHost.setup();
         for (final EmojiCategory.CategoryProperties properties
@@ -268,6 +368,27 @@ public final class EmojiPalettesView extends LinearLayout implements OnTabChange
         mSpacebarIcon = findViewById(R.id.emoji_keyboard_space_icon);
     }
 
+    private void updateTabTextColors() {
+        TabWidget tabWidget = mTabHost2.getTabWidget();
+        int selected = mTabHost2.getCurrentTab();
+
+        for (int i = 0; i < tabWidget.getTabCount(); i++) {
+            View tabView = tabWidget.getChildTabViewAt(i);
+            int color = (i == selected)
+                    ? mTabTextColorSelected
+                    : mTabTextColorUnselected;
+
+            applyTextColor(tabView, color);
+        }
+    }
+
+    private void applyTextColor(View v, int color) {
+        if (v instanceof Button) {
+            ((Button) v).setTextColor(color);
+        }
+    }
+
+
     @Override
     public boolean dispatchTouchEvent(final MotionEvent ev) {
         // Add here to the stack trace to nail down the {@link IllegalArgumentException} exception
@@ -356,6 +477,11 @@ public final class EmojiPalettesView extends LinearLayout implements OnTabChange
         mKeyboardActionListener.onReleaseKey(code, false /* withSliding */);
     }
 
+    @Override
+    public void onKaomojiPress(final String kaomoji) {
+        mKeyboardActionListener.onTextInput(kaomoji);
+    }
+
     public void setHardwareAcceleratedDrawingEnabled(final boolean enabled) {
         if (!enabled) return;
         // TODO: Should use LAYER_TYPE_SOFTWARE when hardware acceleration is off?
@@ -385,6 +511,10 @@ public final class EmojiPalettesView extends LinearLayout implements OnTabChange
         final KeyDrawParams params = new KeyDrawParams();
         params.updateParams(mEmojiLayoutParams.getActionBarHeight(), keyVisualAttr);
         setupAlphabetKey(mAlphabetKeyLeft, switchToAlphaLabel, params);
+        mKaomojiAdapter.setTextColor(params.mTextColor);
+        mTabTextColorSelected = params.mTextColor;
+        mTabTextColorUnselected = params.mHintLabelColor;
+        updateTabTextColors();
         mEmojiPager.setAdapter(mEmojiPalettesAdapter);
         mEmojiPager.setCurrentItem(mCurrentPagerPosition);
     }
