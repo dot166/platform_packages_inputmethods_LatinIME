@@ -33,7 +33,7 @@
         style="?attr/suggestionStripViewStyle"
     >
         <TabHost
-            android:id="@+id/emoji_category_tabhost"
+            android:id="@+id/emoji_panel_tabhost"
             android:layout_width="0dip"
             android:layout_weight="87.5"
             android:layout_height="match_parent"
@@ -52,23 +52,114 @@
                      display anything. We monitor the tab changes and change the ViewPager.
                      Similarly the ViewPager swipes are intercepted and passed to the TabHost. -->
                 <View
-                    android:id="@+id/emoji_keyboard_dummy"
+                    android:id="@+id/emoji_keyboard_blank"
                     android:layout_width="0dip"
                     android:layout_height="0dip"
                     android:visibility="gone" />
             </FrameLayout>
         </TabHost>
-        <include layout="@layout/suggestion_divider" />
     </LinearLayout>
-    <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/emoji_keyboard_pager"
+    <LinearLayout
+        android:id="@+id/tab1_content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical" />
-    <com.android.inputmethod.keyboard.emoji.EmojiCategoryPageIndicatorView
-        android:id="@+id/emoji_category_page_id_view"
+        android:visibility="gone"
+        android:orientation="vertical">
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/config_suggestions_strip_height"
+            style="?attr/suggestionStripViewStyle"
+            >
+            <TabHost
+                android:id="@+id/emoji_category_tabhost"
+                android:layout_width="0dip"
+                android:layout_weight="87.5"
+                android:layout_height="match_parent"
+                >
+                <TabWidget
+                    android:id="@android:id/tabs"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:divider="@null" />
+                <FrameLayout
+                    android:id="@android:id/tabcontent"
+                    android:layout_width="0dip"
+                    android:layout_height="0dip"
+                    >
+                    <!-- Empty placeholder that TabHost requires. But we don't use it to actually
+                         display anything. We monitor the tab changes and change the ViewPager.
+                         Similarly the ViewPager swipes are intercepted and passed to the TabHost. -->
+                    <View
+                        android:id="@+id/emoji_keyboard_dummy"
+                        android:layout_width="0dip"
+                        android:layout_height="0dip"
+                        android:visibility="gone" />
+                </FrameLayout>
+            </TabHost>
+            <include layout="@layout/suggestion_divider" />
+        </LinearLayout>
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/emoji_keyboard_pager"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+        <com.android.inputmethod.keyboard.emoji.EmojiCategoryPageIndicatorView
+            android:id="@+id/emoji_category_page_id_view"
+            android:layout_width="match_parent"
+            android:layout_height="2dip" />
+    </LinearLayout>
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="2dip" />
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:orientation="vertical"
+        android:id="@+id/tab2_content">
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/config_suggestions_strip_height">
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/config_suggestions_strip_height"
+                style="?attr/suggestionStripViewStyle"
+                >
+                <TabHost
+                    android:id="@+id/kaomoji_category_tabhost"
+                    android:layout_width="0dip"
+                    android:layout_weight="87.5"
+                    android:layout_height="match_parent"
+                    >
+                    <TabWidget
+                        android:id="@android:id/tabs"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:divider="@null" />
+                    <FrameLayout
+                        android:id="@android:id/tabcontent"
+                        android:layout_width="0dip"
+                        android:layout_height="0dip"
+                        >
+                        <!-- Empty placeholder that TabHost requires. But we don't use it to actually
+                             display anything. We monitor the tab changes and change the ViewPager.
+                             Similarly the ViewPager swipes are intercepted and passed to the TabHost. -->
+                        <View
+                            android:id="@+id/kaomoji_keyboard_dummy"
+                            android:layout_width="0dip"
+                            android:layout_height="0dip"
+                            android:visibility="gone" />
+                    </FrameLayout>
+                </TabHost>
+                <include layout="@layout/suggestion_divider" />
+            </LinearLayout>
+        </HorizontalScrollView>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/kaomojiRecycler"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:overScrollMode="never"
+            android:scrollbars="vertical" />
+    </LinearLayout>
     <LinearLayout
         android:id="@+id/emoji_action_bar"
         android:orientation="horizontal"
