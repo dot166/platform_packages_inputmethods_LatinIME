@@ -1178,6 +1178,11 @@
         <item>:\\</item>
         <item>O:)</item>
         <item>:[</item>
+    </array>
+    <array
+        name="emoji_kaomojis"
+        format="string"
+    >
         <item>(* ^ ω ^)</item>
         <item>(´ ∀ *)</item>
         <item>٩(◕‿◕｡)۶</item>

@@ -61,6 +61,7 @@ final class EmojiCategory {
     private static final int ID_EIGHT_SYMBOLS = 14;
     private static final int ID_EIGHT_FLAGS = 15;
     private static final int ID_EIGHT_SMILEY_PEOPLE_BORING = 16;
+    static final int ID_KAOMOJI = 17;
 
     public final class CategoryProperties {
         public final int mCategoryId;
@@ -88,7 +89,8 @@ final class EmojiCategory {
             "objects2",
             "symbols2",
             "flags2",
-            "smiley & people2" };
+            "smiley & people2",
+            "kaomoji" };
 
     private static final int[] sCategoryTabIconAttr = {
             R.styleable.EmojiPalettesView_iconEmojiRecentsTab,
@@ -107,7 +109,8 @@ final class EmojiCategory {
             R.styleable.EmojiPalettesView_iconEmojiCategory13Tab,
             R.styleable.EmojiPalettesView_iconEmojiCategory14Tab,
             R.styleable.EmojiPalettesView_iconEmojiCategory15Tab,
-            R.styleable.EmojiPalettesView_iconEmojiCategory16Tab };
+            R.styleable.EmojiPalettesView_iconEmojiCategory16Tab,
+            R.styleable.EmojiPalettesView_iconEmojiCategory6Tab };
 
     private static final int[] sAccessibilityDescriptionResourceIdsForCategories = {
             R.string.spoken_descrption_emoji_category_recents,
@@ -126,7 +129,8 @@ final class EmojiCategory {
             R.string.spoken_descrption_emoji_category_objects,
             R.string.spoken_descrption_emoji_category_symbols,
             R.string.spoken_descrption_emoji_category_flags,
-            R.string.spoken_descrption_emoji_category_eight_smiley_people };
+            R.string.spoken_descrption_emoji_category_eight_smiley_people,
+            R.string.spoken_descrption_emoji_category_emoticons };
 
     private static final int[] sCategoryElementId = {
             KeyboardId.ELEMENT_EMOJI_RECENTS,
@@ -145,7 +149,8 @@ final class EmojiCategory {
             KeyboardId.ELEMENT_EMOJI_CATEGORY13,
             KeyboardId.ELEMENT_EMOJI_CATEGORY14,
             KeyboardId.ELEMENT_EMOJI_CATEGORY15,
-            KeyboardId.ELEMENT_EMOJI_CATEGORY16 };
+            KeyboardId.ELEMENT_EMOJI_CATEGORY16,
+            KeyboardId.ELEMENT_EMOJI_CATEGORY_KAOMOJI };
 
     private final SharedPreferences mPrefs;
     private final Resources mRes;
@@ -200,6 +205,7 @@ final class EmojiCategory {
             addShownCategoryId(EmojiCategory.ID_SYMBOLS);
         }
         addShownCategoryId(EmojiCategory.ID_EMOTICONS);
+        addShownCategoryId(EmojiCategory.ID_KAOMOJI);
 
         DynamicGridKeyboard recentsKbd =
                 getKeyboard(EmojiCategory.ID_RECENTS, 0 /* categoryPageId */);

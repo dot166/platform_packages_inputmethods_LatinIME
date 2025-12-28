@@ -64,7 +64,7 @@
         android:id="@+id/emoji_keyboard_pager"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical" />
+        android:orientation="horizontal" />
     <com.android.inputmethod.keyboard.emoji.EmojiCategoryPageIndicatorView
         android:id="@+id/emoji_category_page_id_view"
         android:layout_width="match_parent"

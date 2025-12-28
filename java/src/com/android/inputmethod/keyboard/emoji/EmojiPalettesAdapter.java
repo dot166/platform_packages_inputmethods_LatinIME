@@ -22,15 +22,18 @@ import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 
 import com.android.inputmethod.keyboard.Key;
 import com.android.inputmethod.keyboard.Keyboard;
 import com.android.inputmethod.keyboard.KeyboardView;
 import com.android.inputmethod.latin.R;
 
-final class EmojiPalettesAdapter extends RecyclerView.Adapter<EmojiPalettesAdapter.ViewHolder> {
+final class EmojiPalettesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private static final String TAG = EmojiPalettesAdapter.class.getSimpleName();
     private static final boolean DEBUG_PAGER = false;
+    private static final int VIEW_TYPE_KEYBOARD = 0;
+    private static final int VIEW_TYPE_KAOMOJI = 1;
 
     private final EmojiPageKeyboardView.OnKeyEventListener mListener;
     private final DynamicGridKeyboard mRecentsKeyboard;
@@ -83,14 +86,43 @@ final class EmojiPalettesAdapter extends RecyclerView.Adapter<EmojiPalettesAdapt
     }
 
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+    public int getItemViewType(int position) {
+        final int categoryId =
+                mEmojiCategory.getCategoryIdAndPageIdFromPagePosition(position).first;
+        return categoryId == EmojiCategory.ID_KAOMOJI
+                ? VIEW_TYPE_KAOMOJI
+                : VIEW_TYPE_KEYBOARD;
+    }
+
+    @Override
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+        if (viewType == VIEW_TYPE_KAOMOJI) {
+            final View root = LayoutInflater.from(viewGroup.getContext())
+                .inflate(R.layout.kaomoji_keyboard_page, viewGroup, false);
+            final KaomojiFlowLayout view = root.findViewById(R.id.kaomoji_flow);
+            int textColor = 0;
+            ViewParent parent = viewGroup.getParent();
+            while (parent != null && !(parent instanceof EmojiPalettesView)) {
+                parent = parent.getParent();
+            }
+            if (parent instanceof EmojiPalettesView) {
+                textColor = ((EmojiPalettesView)parent).mParams != null ? ((EmojiPalettesView)parent).mParams.mTextColor : 0;
+            }
+            view.setTextColor(textColor);
+            view.setKaomojis(viewGroup.getContext().getResources().getStringArray(R.array.emoji_kaomojis));
+            view.addListener(mListener);
+            return new KaomojiViewHolder(root);
+        }
         View view = LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.emoji_keyboard_page, viewGroup, false);
         return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(EmojiPalettesAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+        if (holder instanceof KaomojiViewHolder) {
+            return;
+        }
         if (DEBUG_PAGER) {
             Log.d(TAG, "instantiate item: " + position);
         }
@@ -102,9 +134,9 @@ final class EmojiPalettesAdapter extends RecyclerView.Adapter<EmojiPalettesAdapt
         }
         final Keyboard keyboard =
                 mEmojiCategory.getKeyboardFromPagePosition(position);
-        holder.getKeyboardView().setKeyboard(keyboard);
-        holder.getKeyboardView().setOnKeyEventListener(mListener);
-        mActiveKeyboardViews.put(position, holder.getKeyboardView());
+        ((ViewHolder)holder).getKeyboardView().setKeyboard(keyboard);
+        ((ViewHolder)holder).getKeyboardView().setOnKeyEventListener(mListener);
+        mActiveKeyboardViews.put(position, ((ViewHolder)holder).getKeyboardView());
     }
 
     @Override
@@ -122,6 +154,12 @@ final class EmojiPalettesAdapter extends RecyclerView.Adapter<EmojiPalettesAdapt
 
         public EmojiPageKeyboardView getKeyboardView() {
             return customView;
+        }
+    }
+
+    static class KaomojiViewHolder extends RecyclerView.ViewHolder {
+        KaomojiViewHolder(View root) {
+            super(root);
         }
     }
 }

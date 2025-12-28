@@ -91,6 +91,7 @@ public final class EmojiPalettesView extends LinearLayout implements OnTabChange
     private KeyboardActionListener mKeyboardActionListener = KeyboardActionListener.EMPTY_LISTENER;
 
     private final EmojiCategory mEmojiCategory;
+    public KeyDrawParams mParams;
 
     public EmojiPalettesView(final Context context, final AttributeSet attrs) {
         this(context, attrs, R.attr.emojiPalettesViewStyle);
@@ -356,6 +357,12 @@ public final class EmojiPalettesView extends LinearLayout implements OnTabChange
         mKeyboardActionListener.onReleaseKey(code, false /* withSliding */);
     }
 
+    @Override
+    public void onKaomojiPress(final String kaomoji) {
+        mEmojiCategory.saveLastTypedCategoryPage();
+        mKeyboardActionListener.onTextInput(kaomoji);
+    }
+
     public void setHardwareAcceleratedDrawingEnabled(final boolean enabled) {
         if (!enabled) return;
         // TODO: Should use LAYER_TYPE_SOFTWARE when hardware acceleration is off?
@@ -385,6 +392,7 @@ public final class EmojiPalettesView extends LinearLayout implements OnTabChange
         final KeyDrawParams params = new KeyDrawParams();
         params.updateParams(mEmojiLayoutParams.getActionBarHeight(), keyVisualAttr);
         setupAlphabetKey(mAlphabetKeyLeft, switchToAlphaLabel, params);
+        mParams = params;
         mEmojiPager.setAdapter(mEmojiPalettesAdapter);
         mEmojiPager.setCurrentItem(mCurrentPagerPosition);
     }

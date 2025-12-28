@@ -477,6 +477,7 @@
             <enum name="emojiCategory14" value="24" />
             <enum name="emojiCategory15" value="25" />
             <enum name="emojiCategory16" value="26" />
+            <enum name="emojiCategoryKaomoji" value="27" />
         </attr>
         <!-- This should be aligned with Keyboard.themeId and
              {@link com.android.inputmethod.keyboard.KeyboardTheme#THEME_ID_ICS} etc. -->
@@ -564,6 +565,7 @@
             <enum name="emojiCategory14" value="24" />
             <enum name="emojiCategory15" value="25" />
             <enum name="emojiCategory16" value="26" />
+            <enum name="emojiCategoryKaomoji" value="27" />
         </attr>
         <attr name="elementKeyboard" format="reference"/>
         <!-- Enable proximity characters correction. Disabled by default. -->
