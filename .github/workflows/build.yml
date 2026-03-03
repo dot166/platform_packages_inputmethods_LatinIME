@@ -1,0 +1,23 @@
+name: Run Mozc Updater
+
+on: [push, pull_request, workflow_dispatch]
+
+env:
+  CARGO_TERM_COLOR: always
+  GH_AUTH_TOKEN: ${{ secrets.GH_TOKEN }} # setting GH_TOKEN for the entire workflow
+
+jobs:
+  libmozc-updater:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure git
+        run: |
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+      - name: Run Mozc Updater
+        run: |
+          cd libmozc-updater
+          cargo run --release

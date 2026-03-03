@@ -20,9 +20,13 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.android.inputmethod.event.Event;
+import com.android.inputmethod.latin.MozcEngine;
+import com.android.inputmethod.latin.RichInputMethodManager;
 import com.android.inputmethod.latin.common.Constants;
 import com.android.inputmethod.latin.utils.CapsModeUtils;
 import com.android.inputmethod.latin.utils.RecapitalizeStatus;
+
+import org.mozc.android.inputmethod.japanese.protobuf.ProtoCommands;
 
 /**
  * Keyboard state machine.
@@ -45,6 +49,7 @@ public final class KeyboardState {
         public static final boolean DEBUG_ACTION = false;
 
         public void setAlphabetKeyboard();
+        public void setKanaKeyboard();
         public void setAlphabetManualShiftedKeyboard();
         public void setAlphabetAutomaticShiftedKeyboard();
         public void setAlphabetShiftLockedKeyboard();
@@ -84,11 +89,13 @@ public final class KeyboardState {
     // TODO: Consolidate these two mode booleans into one integer to distinguish between alphabet,
     // symbols, and emoji mode.
     private boolean mIsAlphabetMode;
+    private boolean mIsKanaMode;
     private boolean mIsEmojiMode;
     private AlphabetShiftState mAlphabetShiftState = new AlphabetShiftState();
     private boolean mIsSymbolShifted;
     private boolean mPrevMainKeyboardWasShiftLocked;
     private boolean mPrevSymbolsKeyboardWasShifted;
+    private boolean mPrevBoardWasKana;
     private int mRecapitalizeMode;
 
     // For handling double tap.
@@ -102,6 +109,7 @@ public final class KeyboardState {
         public boolean mIsAlphabetMode;
         public boolean mIsAlphabetShiftLocked;
         public boolean mIsEmojiMode;
+        public boolean mIsKanaMode;
         public int mShiftMode;
 
         @Override
@@ -115,6 +123,9 @@ public final class KeyboardState {
             }
             if (mIsEmojiMode) {
                 return "EMOJI";
+            }
+            if (mIsKanaMode) {
+                return "KANA";
             }
             return "SYMBOLS_" + shiftModeToString(mShiftMode);
         }
@@ -133,14 +144,19 @@ public final class KeyboardState {
         mAlphabetShiftState.setShiftLocked(false);
         mPrevMainKeyboardWasShiftLocked = false;
         mPrevSymbolsKeyboardWasShifted = false;
+        mPrevBoardWasKana = false;
         mShiftKeyState.onRelease();
         mSymbolKeyState.onRelease();
         if (mSavedKeyboardState.mIsValid) {
             onRestoreKeyboardState(autoCapsFlags, recapitalizeMode);
             mSavedKeyboardState.mIsValid = false;
         } else {
-            // Reset keyboard to alphabet mode.
-            setAlphabetKeyboard(autoCapsFlags, recapitalizeMode);
+            if (RichInputMethodManager.getInstance().getCurrentSubtypeLocale().getISO3Language().equals("jpn") && MozcEngine.getInstance().getCompositionMode() == ProtoCommands.CompositionMode.HIRAGANA) {
+                setKanaKeyboard();
+            } else {
+                // Reset keyboard to alphabet mode.
+                setAlphabetKeyboard(autoCapsFlags, recapitalizeMode);
+            }
         }
     }
 
@@ -154,6 +170,7 @@ public final class KeyboardState {
         final SavedKeyboardState state = mSavedKeyboardState;
         state.mIsAlphabetMode = mIsAlphabetMode;
         state.mIsEmojiMode = mIsEmojiMode;
+        state.mIsKanaMode = mIsKanaMode;
         if (mIsAlphabetMode) {
             state.mIsAlphabetShiftLocked = mAlphabetShiftState.isShiftLocked();
             state.mShiftMode = mAlphabetShiftState.isAutomaticShifted() ? AUTOMATIC_SHIFT
@@ -192,6 +209,9 @@ public final class KeyboardState {
             setSymbolsShiftedKeyboard();
         } else {
             setSymbolsKeyboard();
+        }
+        if (state.mIsKanaMode) {
+            setKanaKeyboard();
         }
     }
 
@@ -262,13 +282,27 @@ public final class KeyboardState {
                 setSymbolsKeyboard();
             }
             mPrevSymbolsKeyboardWasShifted = false;
+            mPrevBoardWasKana = false;
+        } else if (mIsKanaMode) {
+            if (mPrevSymbolsKeyboardWasShifted) {
+                setSymbolsShiftedKeyboard();
+            } else {
+                setSymbolsKeyboard();
+            }
+            mPrevSymbolsKeyboardWasShifted = false;
+            mPrevBoardWasKana = true;
         } else {
             mPrevSymbolsKeyboardWasShifted = mIsSymbolShifted;
-            setAlphabetKeyboard(autoCapsFlags, recapitalizeMode);
-            if (mPrevMainKeyboardWasShiftLocked) {
-                setShiftLocked(true);
+            if (mPrevBoardWasKana) {
+                setKanaKeyboard();
+            } else {
+                setAlphabetKeyboard(autoCapsFlags, recapitalizeMode);
+                if (mPrevMainKeyboardWasShiftLocked) {
+                    setShiftLocked(true);
+                }
+                mPrevMainKeyboardWasShiftLocked = false;
             }
-            mPrevMainKeyboardWasShiftLocked = false;
+            mPrevBoardWasKana = false;
         }
     }
 
@@ -304,11 +338,26 @@ public final class KeyboardState {
 
         mSwitchActions.setAlphabetKeyboard();
         mIsAlphabetMode = true;
+        mIsKanaMode = false;
         mIsEmojiMode = false;
         mIsSymbolShifted = false;
         mRecapitalizeMode = RecapitalizeStatus.NOT_A_RECAPITALIZE_MODE;
         mSwitchState = SWITCH_STATE_ALPHA;
         mSwitchActions.requestUpdatingShiftState(autoCapsFlags, recapitalizeMode);
+    }
+
+    private void setKanaKeyboard() {
+        if (DEBUG_INTERNAL_ACTION) {
+            Log.d(TAG, "setKanaKeyboard");
+        }
+
+        mSwitchActions.setKanaKeyboard();
+        mIsAlphabetMode = false;
+        mIsKanaMode = true;
+        mIsEmojiMode = false;
+        mIsSymbolShifted = false;
+        mRecapitalizeMode = RecapitalizeStatus.NOT_A_RECAPITALIZE_MODE;
+        mSwitchState = SWITCH_STATE_ALPHA;
     }
 
     private void setSymbolsKeyboard() {
@@ -317,6 +366,7 @@ public final class KeyboardState {
         }
         mSwitchActions.setSymbolsKeyboard();
         mIsAlphabetMode = false;
+        mIsKanaMode = false;
         mIsSymbolShifted = false;
         mRecapitalizeMode = RecapitalizeStatus.NOT_A_RECAPITALIZE_MODE;
         // Reset alphabet shift state.
@@ -330,6 +380,7 @@ public final class KeyboardState {
         }
         mSwitchActions.setSymbolsShiftedKeyboard();
         mIsAlphabetMode = false;
+        mIsKanaMode = false;
         mIsSymbolShifted = true;
         mRecapitalizeMode = RecapitalizeStatus.NOT_A_RECAPITALIZE_MODE;
         // Reset alphabet shift state.
@@ -342,6 +393,7 @@ public final class KeyboardState {
             Log.d(TAG, "setEmojiKeyboard");
         }
         mIsAlphabetMode = false;
+        mIsKanaMode = false;
         mIsEmojiMode = true;
         mRecapitalizeMode = RecapitalizeStatus.NOT_A_RECAPITALIZE_MODE;
         // Remember caps lock mode and reset alphabet shift state.
@@ -668,9 +720,23 @@ public final class KeyboardState {
         if (Constants.isLetterCode(code)) {
             updateAlphabetShiftState(autoCapsFlags, recapitalizeMode);
         } else if (code == Constants.CODE_EMOJI) {
+            mPrevBoardWasKana = mIsKanaMode;
             setEmojiKeyboard();
+        } else if (code == Constants.CODE_SWITCH_JA_MODE) {
+            if (mIsKanaMode) {
+                MozcEngine.getInstance().setCompositionMode(ProtoCommands.CompositionMode.HALF_ASCII);
+                setAlphabetKeyboard(autoCapsFlags, recapitalizeMode);
+            } else {
+                MozcEngine.getInstance().setCompositionMode(ProtoCommands.CompositionMode.HIRAGANA);
+                setKanaKeyboard();
+            }
         } else if (code == Constants.CODE_ALPHA_FROM_EMOJI) {
-            setAlphabetKeyboard(autoCapsFlags, recapitalizeMode);
+            if (mPrevBoardWasKana) {
+                setKanaKeyboard();
+                mPrevBoardWasKana = false;
+            } else {
+                setAlphabetKeyboard(autoCapsFlags, recapitalizeMode);
+            }
         }
     }
 

@@ -62,6 +62,7 @@
     it: Italian/qwerty
     it_CH: Italian (Switzerland)/swiss
     iw: Hebrew/hebrew        # "he" is the official language code of Hebrew.
+    ja: Japanese # QWERTY
     ka_GE: Georgian (Georgia)/georgian
     kk: Kazakh/east_slavic
     km_KH: Khmer (Cambodia)/khmer
@@ -446,6 +447,14 @@
             android:imeSubtypeMode="keyboard"
             android:imeSubtypeExtraValue="SupportTouchPositionCorrection,EmojiCapable"
             android:isAsciiCapable="false"
+    />
+    <subtype android:icon="@drawable/ic_ime_switcher_dark"
+            android:label="@string/subtype_generic"
+            android:subtypeId="0xf657685a"
+            android:imeSubtypeLocale="ja"
+            android:imeSubtypeMode="keyboard"
+            android:imeSubtypeExtraValue="KeyboardLayoutSet=japanese,EmojiCapable"
+            android:isAsciiCapable="true"
     />
     <subtype android:icon="@drawable/ic_ime_switcher_dark"
             android:label="@string/subtype_generic"
