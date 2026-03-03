@@ -183,7 +183,11 @@ public final class KeyboardLayoutSet {
             keyboardLayoutSetElementId = KeyboardId.ELEMENT_NUMBER;
             break;
         default:
-            keyboardLayoutSetElementId = baseKeyboardLayoutSetElementId;
+            if (baseKeyboardLayoutSetElementId == KeyboardId.ELEMENT_KANA && !mParams.mKeyboardLayoutSetElementIdToParamsMap.contains(KeyboardId.ELEMENT_KANA)) {
+                keyboardLayoutSetElementId = KeyboardId.ELEMENT_ALPHABET;
+            } else {
+                keyboardLayoutSetElementId = baseKeyboardLayoutSetElementId;
+            }
             break;
         }
 

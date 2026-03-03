@@ -38,8 +38,10 @@ import com.android.inputmethod.latin.Dictionary;
 import com.android.inputmethod.latin.DictionaryFacilitator;
 import com.android.inputmethod.latin.LastComposedWord;
 import com.android.inputmethod.latin.LatinIME;
+import com.android.inputmethod.latin.MozcEngine;
 import com.android.inputmethod.latin.NgramContext;
 import com.android.inputmethod.latin.RichInputConnection;
+import com.android.inputmethod.latin.RichInputMethodManager;
 import com.android.inputmethod.latin.Suggest;
 import com.android.inputmethod.latin.Suggest.OnGetSuggestedWordsCallback;
 import com.android.inputmethod.latin.SuggestedWords;
@@ -59,8 +61,13 @@ import com.android.inputmethod.latin.utils.RecapitalizeStatus;
 import com.android.inputmethod.latin.utils.StatsUtils;
 import com.android.inputmethod.latin.utils.TextRange;
 
+import org.mozc.android.inputmethod.japanese.protobuf.ProtoCandidateWindow;
+import org.mozc.android.inputmethod.japanese.protobuf.ProtoCommands;
+
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 
@@ -285,6 +292,9 @@ public final class InputLogic {
     public InputTransaction onPickSuggestionManually(final SettingsValues settingsValues,
             final SuggestedWordInfo suggestionInfo, final int keyboardShiftState,
             final int currentKeyboardScriptId, final LatinIME.UIHandler handler) {
+        if (RichInputMethodManager.getInstance().getCurrentSubtypeLocale().getISO3Language().equals("jpn")) {
+            MozcEngine.getInstance().sendMozcKey(ProtoCommands.KeyEvent.SpecialKey.ENTER);
+        }
         final SuggestedWords suggestedWords = mSuggestedWords;
         final String suggestion = suggestionInfo.mWord;
         // If this is a punctuation picked from the suggestion strip, pass it to onCodeInput
@@ -449,6 +459,86 @@ public final class InputLogic {
     public InputTransaction onCodeInput(final SettingsValues settingsValues,
             @Nonnull final Event event, final int keyboardShiftMode,
             final int currentKeyboardScriptId, final LatinIME.UIHandler handler) {
+        return onCodeInput(settingsValues, event, keyboardShiftMode, currentKeyboardScriptId, handler, false);
+    }
+
+
+    public InputTransaction onCodeInput(final SettingsValues settingsValues,
+            @Nonnull final Event event, final int keyboardShiftMode,
+            final int currentKeyboardScriptId, final LatinIME.UIHandler handler, boolean bypassLibMozc) {
+        if (RichInputMethodManager.getInstance().getCurrentSubtypeLocale().getISO3Language().equals("jpn") && !bypassLibMozc) {
+
+            InputTransaction inputTransaction = new InputTransaction(settingsValues,
+                    event,
+                    SystemClock.uptimeMillis(),
+                    mSpaceState,
+                    getActualCapsMode(settingsValues, keyboardShiftMode));
+
+            // Handle special keys
+            if (event.mKeyCode == Constants.CODE_DELETE) {
+                String preedit = MozcEngine.getInstance().getPreedit();
+                if (Objects.equals(preedit, "")) {
+                    mSuggestedWords = SuggestedWords.getEmptyInstance();
+                    mSuggestionStripViewAccessor.showSuggestionStrip(mSuggestedWords);
+                    return onCodeInput(settingsValues, event, keyboardShiftMode, currentKeyboardScriptId, handler, true);
+                } else {
+                    MozcEngine.getInstance().sendMozcKey(ProtoCommands.KeyEvent.SpecialKey.BACKSPACE);
+                }
+                preedit = MozcEngine.getInstance().getPreedit();
+                if (Objects.equals(preedit, "")) {
+                    mSuggestedWords = SuggestedWords.getEmptyInstance();
+                } else {
+                    List<ProtoCandidateWindow.CandidateWindow.Candidate> words = MozcEngine.getInstance().getCandidates();
+                    ArrayList<SuggestedWordInfo> infos = new ArrayList<>();
+                    infos.add(new SuggestedWordInfo(preedit, "", 1000 - 1, SuggestedWordInfo.KIND_CORRECTION, null, -1, 0));
+                    for (int i = 0; i < words.size(); i++) {
+                        infos.add(new SuggestedWordInfo(words.get(i).getValue(), "", 1000 - (i + 1), SuggestedWordInfo.KIND_CORRECTION, null, -1, 0));
+                    }
+                    mSuggestedWords = new SuggestedWords(infos, null, null, true, false, false, SuggestedWords.INPUT_STYLE_PREDICTION, 0);
+                }
+                mSuggestionStripViewAccessor.showSuggestionStrip(mSuggestedWords);
+            } else if (event.mCodePoint == Constants.CODE_ENTER) {
+                if (!mSuggestedWords.isEmpty()) {
+                    onPickSuggestionManually(settingsValues, mSuggestedWords.getInfo(0), keyboardShiftMode, currentKeyboardScriptId, handler);
+                }
+                return onCodeInput(settingsValues, event, keyboardShiftMode, currentKeyboardScriptId, handler, true);
+            } else if (event.mCodePoint == Constants.CODE_SPACE) {
+                if (!mSuggestedWords.isEmpty()) {
+                    onPickSuggestionManually(settingsValues, mSuggestedWords.getInfo(0), keyboardShiftMode, currentKeyboardScriptId, handler);
+                }
+                return onCodeInput(settingsValues, event, keyboardShiftMode, currentKeyboardScriptId, handler, true);
+            } else {
+                // Only send normal character keys to Mozc
+                CharSequence text = event.getTextToCommit();
+                if (text != null && text.length() > 0) {
+                    for (int i = 0; i < text.length(); i++) {
+                        char c = Character.toLowerCase(text.charAt(i));
+                        // Skip keys that shouldn't go to Mozc
+                        if (c < 'a' || c > 'z') {
+                            // safe to return here, as this should only be one char anyway
+                            return onCodeInput(settingsValues, event, keyboardShiftMode, currentKeyboardScriptId, handler, true);
+                        }
+                        MozcEngine.getInstance().sendMozcKey(c);
+                    }
+                }
+                String preedit = MozcEngine.getInstance().getPreedit();
+                List<ProtoCandidateWindow.CandidateWindow.Candidate> words = MozcEngine.getInstance().getCandidates();
+                if (Objects.equals(preedit, "") && words.isEmpty()) {
+                    mSuggestedWords = SuggestedWords.getEmptyInstance();
+                } else {
+                    ArrayList<SuggestedWordInfo> infos = new ArrayList<>();
+                    infos.add(new SuggestedWordInfo(preedit, "", 1000 - 1, SuggestedWordInfo.KIND_CORRECTION, null, -1, 0));
+                    for (int i = 0; i < words.size(); i++) {
+                        infos.add(new SuggestedWordInfo(words.get(i).getValue(), "", 1000 - (i + 1), SuggestedWordInfo.KIND_CORRECTION, null, -1, 0));
+                    }
+                    mSuggestedWords = new SuggestedWords(infos, null, null, true, false, false, SuggestedWords.INPUT_STYLE_PREDICTION, 0);
+                }
+                mSuggestionStripViewAccessor.showSuggestionStrip(mSuggestedWords);
+            }
+            inputTransaction.requireShiftUpdate(InputTransaction.SHIFT_UPDATE_NOW);
+
+            return inputTransaction;
+        }
         mWordBeingCorrectedByCursor = null;
         final Event processedEvent = mWordComposer.processEvent(event);
         final InputTransaction inputTransaction = new InputTransaction(settingsValues,
@@ -711,6 +801,10 @@ public final class InputLogic {
                 // Shift + Enter is treated as a functional key but it results in adding a new
                 // line, so that does affect the contents of the editor.
                 inputTransaction.setDidAffectContents();
+                break;
+            case Constants.CODE_SWITCH_JA_MODE:
+                // Note: Switching japanese keyboard mode is being handled in
+                // {@link KeyboardState#onEvent(Event,int)}.
                 break;
             default:
                 throw new RuntimeException("Unknown key code : " + event.mKeyCode);
