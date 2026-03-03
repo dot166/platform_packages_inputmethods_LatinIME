@@ -105,6 +105,7 @@ import com.android.inputmethod.latin.utils.SubtypeLocaleUtils;
 import com.android.inputmethod.latin.utils.ViewLayoutUtils;
 
 import java.io.FileDescriptor;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -626,6 +627,11 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         mDisplayContext = getDisplayContext();
         KeyboardSwitcher.init(this);
         super.onCreate();
+        try {
+            MozcEngine.init(this);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         mHandler.onCreate();
 
@@ -783,6 +789,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         unregisterReceiver(mDictionaryPackInstallReceiver);
         unregisterReceiver(mDictionaryDumpBroadcastReceiver);
         mStatsUtilsManager.onDestroy(this /* context */);
+        MozcEngine.getInstance().deleteSession();
         super.onDestroy();
     }
 
@@ -1160,6 +1167,11 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         mInputLogic.finishInput();
         if (hasSuggestionStripView()) {
             mSuggestionStripView.resetPasteActionState();
+        }
+        try {
+            MozcEngine.getInstance().resetSession();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -1712,7 +1724,8 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
                 || (!settingsValues.mInputAttributes.mIsPasswordField
                         && (shouldShowImportantNotice
                                 || settingsValues.mShowsVoiceInputKey
-                                || areSuggestionCandidatesEnabled(settingsValues)));
+                                || areSuggestionCandidatesEnabled(settingsValues)
+                                || mRichImm.getCurrentSubtypeLocale().getISO3Language().equals("jpn")));
         mSuggestionStripView.updateVisibility(shouldShow, isFullscreenMode());
         return shouldShow;
     }

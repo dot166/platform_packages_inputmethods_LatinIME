@@ -5,3 +5,5 @@
 LatinIME.iml
 build/
 local.properties
+java/proto/protocol/BUILD.bazel
+java/proto/protocol/protocol.gyp

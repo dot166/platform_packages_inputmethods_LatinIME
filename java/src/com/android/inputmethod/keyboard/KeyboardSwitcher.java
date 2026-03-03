@@ -226,6 +226,15 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
 
     // Implements {@link KeyboardState.SwitchActions}.
     @Override
+    public void setKanaKeyboard() {
+        if (DEBUG_ACTION) {
+            Log.d(TAG, "setKanaKeyboard");
+        }
+        setKeyboard(KeyboardId.ELEMENT_KANA, KeyboardSwitchState.OTHER);
+    }
+
+    // Implements {@link KeyboardState.SwitchActions}.
+    @Override
     public void setAlphabetManualShiftedKeyboard() {
         if (DEBUG_ACTION) {
             Log.d(TAG, "setAlphabetManualShiftedKeyboard");
