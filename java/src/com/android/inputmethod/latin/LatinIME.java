@@ -105,6 +105,7 @@ import com.android.inputmethod.latin.utils.SubtypeLocaleUtils;
 import com.android.inputmethod.latin.utils.ViewLayoutUtils;
 
 import java.io.FileDescriptor;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -611,6 +612,11 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         mDisplayContext = getDisplayContext();
         KeyboardSwitcher.init(this);
         super.onCreate();
+        try {
+            MozcEngine.init(this);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         mHandler.onCreate();
 
@@ -768,6 +774,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         unregisterReceiver(mDictionaryPackInstallReceiver);
         unregisterReceiver(mDictionaryDumpBroadcastReceiver);
         mStatsUtilsManager.onDestroy(this /* context */);
+        MozcEngine.getInstance().deleteSession();
         super.onDestroy();
     }
 
@@ -1132,6 +1139,11 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         mHandler.cancelUpdateSuggestionStrip();
         // Should do the following in onFinishInputInternal but until JB MR2 it's not called :(
         mInputLogic.finishInput();
+        try {
+            MozcEngine.getInstance().resetSession();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     protected void deallocateMemory() {
@@ -1620,7 +1632,8 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         final boolean shouldShowSuggestionsStripUnlessPassword = shouldShowImportantNotice
                 || currentSettingsValues.mShowsVoiceInputKey
                 || shouldShowSuggestionCandidates
-                || currentSettingsValues.isApplicationSpecifiedCompletionsOn();
+                || currentSettingsValues.isApplicationSpecifiedCompletionsOn()
+                || mRichImm.getCurrentSubtypeLocale().getISO3Language().equals("jpn");
         final boolean shouldShowSuggestionsStrip = shouldShowSuggestionsStripUnlessPassword
                 && !currentSettingsValues.mInputAttributes.mIsPasswordField;
         mSuggestionStripView.updateVisibility(shouldShowSuggestionsStrip, isFullscreenMode());

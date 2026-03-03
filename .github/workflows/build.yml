@@ -1,0 +1,71 @@
+name: Run Mozc Updater
+
+on: [push, pull_request, workflow_dispatch]
+
+env:
+  CARGO_TERM_COLOR: always
+  GH_AUTH_TOKEN: ${{ secrets.GH_TOKEN }} # setting GH_TOKEN for the entire workflow
+
+jobs:
+  libmozc-updater:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+          pip-install: jaconv
+      - name: Configure git
+        run: |
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+      - name: Clone libmozc
+        run: git clone https://github.com/google/mozc.git
+      - name: Clone libmozc UT dictionaries
+        working-directory: ./mozc/src
+        run: |
+          git clone https://github.com/utuhiro78/merge-ut-dictionaries.git
+          cd merge-ut-dictionaries
+          git am ../../../.github/CI-PATCHES/0001-enable-all-dicts.patch
+      - name: Add libmozc UT dictionaries
+        working-directory: ./mozc/src/merge-ut-dictionaries/src/merge
+        run: |
+          chmod +x make.sh
+          ./make.sh
+          cat mozcdic-ut.txt >> ../../../data/dictionary_oss/dictionary00.txt
+      - name: Update libmozc dependencies
+        working-directory: ./mozc/src
+        run: python3 build_tools/update_deps.py
+      - name: Build libmozc for android
+        working-directory: ./mozc/src
+        run: bazelisk build package --config oss_android --config release_build
+      - name: Extract libmozc
+        working-directory: ./mozc/src
+        run: |
+          unzip bazel-bin/android/jni/native_libs.zip
+          mkdir -p ../../java/lib
+          cp -r libs/* ../../java/lib/
+      - name: Build libmozc dictionary
+        working-directory: ./mozc/src
+        run: bazelisk build //data_manager/oss:mozc_dataset_for_oss --config linux --config release_build
+      - name: Copy libmozc dictionary
+        run: |
+          mkdir -p java/assets
+          cp mozc/src/bazel-bin/data_manager/oss/mozc.data java/assets/mozc.data
+      - name: Sync and Patch Proto Files
+        run: |
+          SRC="mozc/src/protocol"
+          DST="java/proto/protocol"
+          mkdir -p "$DST"
+          cd "$SRC"
+          find . -name "*.proto" -exec cp --parents \{\} "../../../$DST/" \;
+          cd ../../../
+          find "$DST" -name "*.proto" -type f -exec sed -i \
+            's|import "protocol/|import "packages/inputmethods/LatinIME/java/proto/protocol/|g' {} +
+      - name: Cleanup and Commit Changes
+        run: |
+          rm -rf mozc
+          git add .
+          git diff-index --quiet HEAD || git commit -m "LatinIME: Updated libmozc"
+          git push
