@@ -28,6 +28,10 @@ fn main() {
         panic!("Failed to clone mozc");
     }
     env::set_current_dir(&Path::new("mozc/src")).unwrap();
+    let status = Command::new("python3").arg("build_tools/update_deps.py").status().unwrap();
+    if !status.success() {
+        panic!("Failed to update mozc deps");
+    }
     let status = Command::new("bazelisk").arg("build").arg("package").arg("--config").arg("oss_android").arg("--config").arg("release_build").status().unwrap();
     if !status.success() {
         panic!("Failed to build mozc");
