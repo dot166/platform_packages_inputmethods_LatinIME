@@ -514,7 +514,7 @@ public final class InputLogic {
                     for (int i = 0; i < text.length(); i++) {
                         char c = Character.toLowerCase(text.charAt(i));
                         // Skip keys that shouldn't go to Mozc
-                        if (c < 'a' || c > 'z') {
+                        if ((c < 'a' || c > 'z') && c != 'ー') {
                             // safe to return here, as this should only be one char anyway
                             return onCodeInput(settingsValues, event, keyboardShiftMode, currentKeyboardScriptId, handler, true);
                         }

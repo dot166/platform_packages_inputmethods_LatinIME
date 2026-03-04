@@ -34,8 +34,7 @@
         latin:keyWidth="10%p"
     >
         <include
-            latin:keyboardLayout="@xml/rowkeys_qwerty2"
-            latin:keyXPos="5%p" />
+            latin:keyboardLayout="@xml/rowkeys_japanese2_kana" />
     </Row>
     <Row
         latin:keyWidth="10%p"
