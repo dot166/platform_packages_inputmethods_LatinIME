@@ -292,9 +292,6 @@ public final class InputLogic {
     public InputTransaction onPickSuggestionManually(final SettingsValues settingsValues,
             final SuggestedWordInfo suggestionInfo, final int keyboardShiftState,
             final int currentKeyboardScriptId, final LatinIME.UIHandler handler) {
-        if (RichInputMethodManager.getInstance().getCurrentSubtypeLocale().getISO3Language().equals("jpn")) {
-            MozcEngine.getInstance().sendMozcKey(ProtoCommands.KeyEvent.SpecialKey.ENTER);
-        }
         final SuggestedWords suggestedWords = mSuggestedWords;
         final String suggestion = suggestionInfo.mWord;
         // If this is a punctuation picked from the suggestion strip, pass it to onCodeInput
@@ -467,50 +464,48 @@ public final class InputLogic {
             @Nonnull final Event event, final int keyboardShiftMode,
             final int currentKeyboardScriptId, final LatinIME.UIHandler handler, boolean bypassLibMozc) {
         if (RichInputMethodManager.getInstance().getCurrentSubtypeLocale().getISO3Language().equals("jpn") && !bypassLibMozc) {
-
-            InputTransaction inputTransaction = new InputTransaction(settingsValues,
-                    event,
-                    SystemClock.uptimeMillis(),
-                    mSpaceState,
-                    getActualCapsMode(settingsValues, keyboardShiftMode));
-
             // Handle special keys
             if (event.mKeyCode == Constants.CODE_DELETE) {
                 String preedit = MozcEngine.getInstance().getPreedit();
-                if (Objects.equals(preedit, "")) {
-                    mSuggestedWords = SuggestedWords.getEmptyInstance();
-                    mSuggestionStripViewAccessor.showSuggestionStrip(mSuggestedWords);
-                    return onCodeInput(settingsValues, event, keyboardShiftMode, currentKeyboardScriptId, handler, true);
-                } else {
+                if (!Objects.equals(preedit, "")) {
                     MozcEngine.getInstance().sendMozcKey(ProtoCommands.KeyEvent.SpecialKey.BACKSPACE);
-                }
-                preedit = MozcEngine.getInstance().getPreedit();
-                if (Objects.equals(preedit, "")) {
-                    mSuggestedWords = SuggestedWords.getEmptyInstance();
-                } else {
-                    List<ProtoCandidateWindow.CandidateWindow.Candidate> words = MozcEngine.getInstance().getCandidates();
-                    ArrayList<SuggestedWordInfo> infos = new ArrayList<>();
-                    infos.add(new SuggestedWordInfo(preedit, "", 1000 - 1, SuggestedWordInfo.KIND_CORRECTION, null, -1, 0));
-                    for (int i = 0; i < words.size(); i++) {
-                        infos.add(new SuggestedWordInfo(words.get(i).getValue(), "", 1000 - (i + 1), SuggestedWordInfo.KIND_CORRECTION, null, -1, 0));
+                    preedit = MozcEngine.getInstance().getPreedit();
+                    mWordBeingCorrectedByCursor = null;
+                    final Event processedEvent = mWordComposer.processEvent(event);
+                    final InputTransaction inputTransaction = new InputTransaction(settingsValues,
+                            processedEvent, SystemClock.uptimeMillis(), mSpaceState,
+                            getActualCapsMode(settingsValues, keyboardShiftMode));
+                    mLastKeyTime = inputTransaction.mTimestamp;
+                    mConnection.beginBatchEdit();
+                    cancelDoubleSpacePeriodCountdown();
+                    setComposingTextInternal(preedit, 1);
+                    inputTransaction.setDidAffectContents();
+                    inputTransaction.setRequiresUpdateSuggestions();
+                    if (!mConnection.hasSlowInputConnection() && !mWordComposer.isComposingWord()
+                            && settingsValues.isWordCodePoint(processedEvent.mCodePoint)) {
+                        mWordBeingCorrectedByCursor = getWordAtCursor(
+                                settingsValues, currentKeyboardScriptId);
                     }
-                    mSuggestedWords = new SuggestedWords(infos, null, null, true, false, false, SuggestedWords.INPUT_STYLE_PREDICTION, 0);
-                }
-                mSuggestionStripViewAccessor.showSuggestionStrip(mSuggestedWords);
-            } else if (event.mCodePoint == Constants.CODE_ENTER) {
-                if (!mSuggestedWords.isEmpty()) {
-                    onPickSuggestionManually(settingsValues, mSuggestedWords.getInfo(0), keyboardShiftMode, currentKeyboardScriptId, handler);
+                    if (!inputTransaction.didAutoCorrect() && processedEvent.mKeyCode != Constants.CODE_SHIFT
+                            && processedEvent.mKeyCode != Constants.CODE_CAPSLOCK
+                            && processedEvent.mKeyCode != Constants.CODE_SWITCH_ALPHA_SYMBOL)
+                        mLastComposedWord.deactivate();
+                    mConnection.endBatchEdit();
+                    return inputTransaction;
                 }
                 return onCodeInput(settingsValues, event, keyboardShiftMode, currentKeyboardScriptId, handler, true);
+            } else if (event.mCodePoint == Constants.CODE_ENTER) {
+                MozcEngine.getInstance().sendMozcKey(ProtoCommands.KeyEvent.SpecialKey.ENTER);
+                mConnection.finishComposingText();
+                return onCodeInput(settingsValues, event, keyboardShiftMode, currentKeyboardScriptId, handler, true);
             } else if (event.mCodePoint == Constants.CODE_SPACE) {
-                if (!mSuggestedWords.isEmpty()) {
-                    onPickSuggestionManually(settingsValues, mSuggestedWords.getInfo(0), keyboardShiftMode, currentKeyboardScriptId, handler);
-                }
+                MozcEngine.getInstance().sendMozcKey(ProtoCommands.KeyEvent.SpecialKey.ENTER);
+                mConnection.finishComposingText();
                 return onCodeInput(settingsValues, event, keyboardShiftMode, currentKeyboardScriptId, handler, true);
             } else {
                 // Only send normal character keys to Mozc
                 CharSequence text = event.getTextToCommit();
-                if (text != null && text.length() > 0) {
+                if (text != null && !text.isEmpty()) {
                     for (int i = 0; i < text.length(); i++) {
                         char c = Character.toLowerCase(text.charAt(i));
                         // Skip keys that shouldn't go to Mozc
@@ -522,22 +517,29 @@ public final class InputLogic {
                     }
                 }
                 String preedit = MozcEngine.getInstance().getPreedit();
-                List<ProtoCandidateWindow.CandidateWindow.Candidate> words = MozcEngine.getInstance().getCandidates();
-                if (Objects.equals(preedit, "") && words.isEmpty()) {
-                    mSuggestedWords = SuggestedWords.getEmptyInstance();
-                } else {
-                    ArrayList<SuggestedWordInfo> infos = new ArrayList<>();
-                    infos.add(new SuggestedWordInfo(preedit, "", 1000 - 1, SuggestedWordInfo.KIND_CORRECTION, null, -1, 0));
-                    for (int i = 0; i < words.size(); i++) {
-                        infos.add(new SuggestedWordInfo(words.get(i).getValue(), "", 1000 - (i + 1), SuggestedWordInfo.KIND_CORRECTION, null, -1, 0));
-                    }
-                    mSuggestedWords = new SuggestedWords(infos, null, null, true, false, false, SuggestedWords.INPUT_STYLE_PREDICTION, 0);
+                mWordBeingCorrectedByCursor = null;
+                final Event processedEvent = mWordComposer.processEvent(event);
+                final InputTransaction inputTransaction = new InputTransaction(settingsValues,
+                        processedEvent, SystemClock.uptimeMillis(), mSpaceState,
+                        getActualCapsMode(settingsValues, keyboardShiftMode));
+                mLastKeyTime = inputTransaction.mTimestamp;
+                mConnection.beginBatchEdit();
+                cancelDoubleSpacePeriodCountdown();
+                setComposingTextInternal(preedit, 1);
+                inputTransaction.setDidAffectContents();
+                inputTransaction.setRequiresUpdateSuggestions();
+                if (!mConnection.hasSlowInputConnection() && !mWordComposer.isComposingWord()
+                        && settingsValues.isWordCodePoint(processedEvent.mCodePoint)) {
+                    mWordBeingCorrectedByCursor = getWordAtCursor(
+                            settingsValues, currentKeyboardScriptId);
                 }
-                mSuggestionStripViewAccessor.showSuggestionStrip(mSuggestedWords);
+                if (!inputTransaction.didAutoCorrect() && processedEvent.mKeyCode != Constants.CODE_SHIFT
+                        && processedEvent.mKeyCode != Constants.CODE_CAPSLOCK
+                        && processedEvent.mKeyCode != Constants.CODE_SWITCH_ALPHA_SYMBOL)
+                    mLastComposedWord.deactivate();
+                mConnection.endBatchEdit();
+                return inputTransaction;
             }
-            inputTransaction.requireShiftUpdate(InputTransaction.SHIFT_UPDATE_NOW);
-
-            return inputTransaction;
         }
         mWordBeingCorrectedByCursor = null;
         final Event processedEvent = mWordComposer.processEvent(event);

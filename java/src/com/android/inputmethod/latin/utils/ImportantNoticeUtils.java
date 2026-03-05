@@ -26,7 +26,6 @@ import android.util.Log;
 
 import com.android.inputmethod.annotations.UsedForTesting;
 import com.android.inputmethod.latin.R;
-import com.android.inputmethod.latin.RichInputMethodManager;
 import com.android.inputmethod.latin.permissions.PermissionsUtil;
 import com.android.inputmethod.latin.settings.SettingsValues;
 
@@ -83,9 +82,6 @@ public final class ImportantNoticeUtils {
 
     public static boolean shouldShowImportantNotice(final Context context,
             final SettingsValues settingsValues) {
-        if (RichInputMethodManager.getInstance().getCurrentSubtypeLocale().getISO3Language().equals("jpn")) {
-            return false;
-        }
         // Check to see whether "Use Contacts" is enabled by the user.
         if (!settingsValues.mUseContactsDict) {
             return false;
