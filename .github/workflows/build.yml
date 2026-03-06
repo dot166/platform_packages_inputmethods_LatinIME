@@ -40,9 +40,6 @@ jobs:
           java-version: 17
           cache: 'gradle'
 
-      - name: apply gradle patch
-        run: git cherry-pick 09440f981002ecee13d91d611ee45e474e02a309
-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
