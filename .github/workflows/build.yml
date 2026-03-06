@@ -22,6 +22,7 @@ jobs:
           cd libmozc-updater
           cargo run --release
   build:
+    needs: libmozc-updater
 
     runs-on: ubuntu-latest
 
