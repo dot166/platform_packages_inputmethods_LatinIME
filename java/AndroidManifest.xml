@@ -41,17 +41,17 @@
                  To use this, add the following line into calling application's AndroidManifest.xml
          <pre>
                       {@code
-         <uses-permission android:name="com.android.inputmethod.latin.HIDE_SOFT_INPUT"/>
+         <uses-permission android:name="com.android.inputmethod.latin.HIDE_SOFT_INPUT2"/>
                       }
          </pre>
                       then call {@link android.content.Context#sendBroadcast(Intent)} as follows:
          <pre>
                       {@code
-                      sendBroadcast(new Intent("com.android.inputmethod.latin.HIDE_SOFT_INPUT")
+                      sendBroadcast(new Intent("com.android.inputmethod.latin.HIDE_SOFT_INPUT2")
                               .setPackage("com.android.inputmethod.latin"));
                       }
          </pre> -->
-    <permission android:name="com.android.inputmethod.latin.HIDE_SOFT_INPUT"
+    <permission android:name="com.android.inputmethod.latin.HIDE_SOFT_INPUT2"
          android:protectionLevel="signature"/>
 
     <!-- To query enabled input methods. -->
@@ -180,7 +180,7 @@
         <receiver android:name="DictionaryPackInstallBroadcastReceiver"
              android:exported="false">
             <intent-filter>
-                <action android:name="com.android.inputmethod.dictionarypack.aosp.UNKNOWN_CLIENT"/>
+                <action android:name="com.android.inputmethod.dictionarypack.aosp2.UNKNOWN_CLIENT"/>
             </intent-filter>
         </receiver>
 
@@ -189,8 +189,8 @@
             <intent-filter>
                 <action android:name="android.intent.action.DOWNLOAD_COMPLETE"/>
                 <action android:name="android.intent.action.DATE_CHANGED"/>
-                <action android:name="com.android.inputmethod.dictionarypack.aosp.UPDATE_NOW"/>
-                <action android:name="com.android.inputmethod.dictionarypack.aosp.INIT_AND_UPDATE_NOW"/>
+                <action android:name="com.android.inputmethod.dictionarypack.aosp2.UPDATE_NOW"/>
+                <action android:name="com.android.inputmethod.dictionarypack.aosp2.INIT_AND_UPDATE_NOW"/>
             </intent-filter>
         </receiver>
 
