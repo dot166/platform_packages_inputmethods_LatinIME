@@ -41,7 +41,7 @@ jobs:
           cache: 'gradle'
 
       - name: apply gradle patch
-        run: git am .github/0001-gradle.patch
+        run: git cherry-pick cc06892f4a3d8aeaf210bbfee960f77d0d24365a
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
