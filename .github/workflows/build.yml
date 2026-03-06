@@ -8,40 +8,62 @@ env:
 
 jobs:
   libmozc-updater:
-
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
       - name: Configure git
         run: |
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
-      - name: Run Mozc Updater
+      - name: Clone libmozc
+        run: git clone https://github.com/google/mozc.git
+      - name: Update libmozc dependencies
+        working-directory: ./mozc/src
+        run: python3 build_tools/update_deps.py
+      - name: Build libmozc for android
+        working-directory: ./mozc/src
+        run: bazelisk build package --config oss_android --config release_build
+      - name: Extract libmozc
+        working-directory: ./mozc/src
         run: |
-          cd libmozc-updater
-          cargo run --release
+          unzip bazel-bin/android/jni/native_libs.zip
+          mkdir -p ../../java/lib
+          cp -r libs/* ../../java/lib/
+      - name: Build libmozc dictionary
+        working-directory: ./mozc/src
+        run: bazelisk build //data_manager/oss:mozc_dataset_for_oss --config linux --config release_build
+      - name: Copy libmozc dictionary
+        run: |
+          mkdir -p java/assets
+          cp mozc/src/bazel-bin/data_manager/oss/mozc.data java/assets/mozc.data
+      - name: Sync and Patch Proto Files
+        run: |
+          SRC="mozc/src/protocol"
+          DST="java/proto/protocol"
+          mkdir -p "$DST"
+          cd "$SRC"
+          find . -name "*.proto" -exec cp --parents \{\} "../../$DST/" \;
+          cd ../../../
+          find "$DST" -name "*.proto" -type f -exec sed -i \
+            's|import "protocol/|import "packages/inputmethods/LatinIME/java/proto/protocol/|g' {} +
+      - name: Cleanup and Commit Changes
+        run: |
+          rm -rf mozc
+          git add .
+          git diff-index --quiet HEAD || git commit -m "LatinIME: Updated libmozc"
+          git push
   build:
     needs: libmozc-updater
-
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
-      - name: Configure git
-        run: |
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-    
       - name: Setup JDK 17
         uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
           java-version: 17
           cache: 'gradle'
-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-
       - name: Build
         run: ./gradlew assembleRelease
