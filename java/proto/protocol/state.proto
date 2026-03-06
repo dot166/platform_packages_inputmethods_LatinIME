@@ -32,8 +32,8 @@ syntax = "proto2";
 
 package mozc.protocol;
 
-import "protocol/candidate_window.proto";
-import "protocol/commands.proto";
+import "packages/inputmethods/LatinIME/java/proto/protocol/candidate_window.proto";
+import "packages/inputmethods/LatinIME/java/proto/protocol/commands.proto";
 
 message SessionState {
   // session id

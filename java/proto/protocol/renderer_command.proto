@@ -37,7 +37,7 @@ syntax = "proto2";
 
 package mozc.commands;
 
-import "protocol/commands.proto";
+import "packages/inputmethods/LatinIME/java/proto/protocol/commands.proto";
 
 message RendererCommand {
   message Rectangle {
