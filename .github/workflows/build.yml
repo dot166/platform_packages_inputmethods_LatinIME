@@ -1,4 +1,4 @@
-name: Run Mozc Updater
+name: Run Mozc Updater and build LatinIME
 
 on: [push, pull_request, workflow_dispatch]
 
@@ -21,3 +21,29 @@ jobs:
         run: |
           cd libmozc-updater
           cargo run --release
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure git
+        run: |
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+    
+      - name: Setup JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: 17
+          cache: 'gradle'
+
+      - name: apply gradle patch
+        run: git am .github/0001-gradle.patch
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build
+        run: ./gradlew assembleRelease
