@@ -10,13 +10,27 @@ jobs:
   libmozc-updater:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+          pip-install: jaconv
       - name: Configure git
         run: |
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
       - name: Clone libmozc
         run: git clone https://github.com/google/mozc.git
+      - name: Clone libmozc UT dictionaries
+        working-directory: ./mozc/src
+        run: git clone https://github.com/dot166/merge-ut-dictionaries.git
+      - name: Add libmozc UT dictionaries
+        working-directory: ./mozc/src/merge-ut-dictionaries/src/merge
+        run: |
+          chmod +x make.sh
+          ./make.sh
+          cat mozcdic-ut.txt >> ../../../data/dictionary_oss/dictionary00.txt
       - name: Update libmozc dependencies
         working-directory: ./mozc/src
         run: python3 build_tools/update_deps.py
