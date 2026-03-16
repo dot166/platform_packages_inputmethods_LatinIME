@@ -200,6 +200,10 @@ public final class KeyboardState {
             }
             return;
         }
+        if (state.mIsKanaMode) {
+            setKanaKeyboard();
+            return;
+        }
         if (state.mIsEmojiMode) {
             setEmojiKeyboard();
             return;
@@ -209,9 +213,6 @@ public final class KeyboardState {
             setSymbolsShiftedKeyboard();
         } else {
             setSymbolsKeyboard();
-        }
-        if (state.mIsKanaMode) {
-            setKanaKeyboard();
         }
     }
 
