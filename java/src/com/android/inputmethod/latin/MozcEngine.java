@@ -7,7 +7,6 @@ import android.content.res.Resources;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import com.android.inputmethod.keyboard.KeyboardId;
 import com.google.android.apps.inputmethod.libs.mozc.session.MozcJNI;
 
 import org.mozc.android.inputmethod.japanese.protobuf.ProtoCandidateWindow;
@@ -389,7 +388,7 @@ public class MozcEngine {
         }
     }
 
-    public void resetSession(KeyboardId id) throws IOException {
+    public void resetSession() throws IOException {
         deleteSession();
         ProtoCommands.Command createCommand =
                 ProtoCommands.Command.newBuilder()
@@ -406,11 +405,7 @@ public class MozcEngine {
 
         this.sessionId = createResponse.getOutput().getId();
 
-        if (id.mElementId == KeyboardId.ELEMENT_KANA) {
-            setCompositionMode(ProtoCommands.CompositionMode.HIRAGANA);
-        } else if (id.isAlphabetKeyboard()) {
-            setCompositionMode(ProtoCommands.CompositionMode.HALF_ASCII);
-        }
+        setCompositionMode(ProtoCommands.CompositionMode.forNumber(prefs.getInt("libmozc_enabled", ProtoCommands.CompositionMode.HIRAGANA.getNumber())));
     }
     public static String getDeviceOrientationString(Configuration configuration) {
         switch (configuration.orientation) {

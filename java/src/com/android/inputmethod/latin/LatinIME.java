@@ -1140,7 +1140,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         // Should do the following in onFinishInputInternal but until JB MR2 it's not called :(
         mInputLogic.finishInput();
         try {
-            MozcEngine.getInstance().resetSession(mKeyboardSwitcher.getKeyboard().mId);
+            MozcEngine.getInstance().resetSession();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
