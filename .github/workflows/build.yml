@@ -61,7 +61,7 @@ jobs:
           DST="java/proto/protocol"
           mkdir -p "$DST"
           cd "$SRC"
-          find . -name "*.proto" -exec cp --parents \{\} "../../$DST/" \;
+          find . -name "*.proto" -exec cp --parents \{\} "../../../$DST/" \;
           cd ../../../
           find "$DST" -name "*.proto" -type f -exec sed -i \
             's|import "protocol/|import "packages/inputmethods/LatinIME/java/proto/protocol/|g' {} +
