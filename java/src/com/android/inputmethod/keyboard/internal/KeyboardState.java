@@ -192,6 +192,11 @@ public final class KeyboardState {
                     + " " + stateToString(autoCapsFlags, recapitalizeMode));
         }
         mPrevMainKeyboardWasShiftLocked = state.mIsAlphabetShiftLocked;
+        if (MozcEngine.getInstance().getCompositionMode() == ProtoCommands.CompositionMode.HIRAGANA && state.mIsAlphabetMode && RichInputMethodManager.getInstance().getCurrentSubtypeLocale().getISO3Language().equals("jpn")) {
+            // probably switched lang from non-jpn to jpn, return kana
+            setKanaKeyboard();
+            return;
+        }
         if (state.mIsAlphabetMode) {
             setAlphabetKeyboard(autoCapsFlags, recapitalizeMode);
             setShiftLocked(state.mIsAlphabetShiftLocked);
