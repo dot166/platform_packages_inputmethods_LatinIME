@@ -29,7 +29,10 @@ jobs:
         run: git clone https://github.com/google/mozc.git
       - name: Clone libmozc UT dictionaries
         working-directory: ./mozc/src
-        run: git clone https://github.com/dot166/merge-ut-dictionaries.git
+        run: |
+          git clone https://github.com/utuhiro78/merge-ut-dictionaries.git
+          cd merge-ut-dictionaries
+          git am ../../../.github/CI-PATCHES/0001-enable-all-dicts.patch
       - name: Add libmozc UT dictionaries
         working-directory: ./mozc/src/merge-ut-dictionaries/src/merge
         run: |
