@@ -646,11 +646,6 @@ message DecoderExperimentParams {
   // The candidate will not be filtered if this value is zero.
   optional int32 suffix_nwp_transition_cost_threshold = 107 [default = 0];
 
-  // Stores inner segment boundary in user history cache.
-  // This information is going to be shared with user_segment_rewriter.
-  optional bool user_history_cache_inner_segment_boundary = 135
-      [default = false];
-
   // Allows partial (prefix) match in user history decoding.
   optional bool user_history_allow_partial_match = 144 [default = false];
 
@@ -679,10 +674,6 @@ message DecoderExperimentParams {
   // over the history suggestion.
   optional float candidate_mixing_min_post_correction_prob = 141
       [default = 0.0];
-
-  // Uses new RealtimeDecoder::DecodeSuffix to compute the penalty of
-  // partial suggestion. New method can compute more precise penalty.
-  optional bool use_suffix_decoder_for_prefix_penalty = 142 [default = false];
 
   // Cost penalty added to the partial candidate. Partial candidate should not
   // be ranked lower than normal full candidates.
