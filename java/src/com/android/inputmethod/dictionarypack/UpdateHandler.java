@@ -229,9 +229,10 @@ public final class UpdateHandler {
         // Adding a disambiguator to circumvent a bug in older versions of DownloadManager.
         // DownloadManager also stupidly cuts the extension to replace with its own that it
         // gets from the content-type. We need to circumvent this.
-        final String disambiguator = "#" + System.currentTimeMillis()
-                + ApplicationUtils.getVersionName(context) + ".json";
-        final Request metadataRequest = new Request(Uri.parse(metadataUri + disambiguator));
+        // disable disambiguator because my potato infrastructure cant handle it
+        //final String disambiguator = "#" + System.currentTimeMillis()
+        //        + ApplicationUtils.getVersionName(context) + ".json";
+        final Request metadataRequest = new Request(Uri.parse(metadataUri));// + disambiguator));
         DebugLogUtils.l("Request =", metadataRequest);
 
         final Resources res = context.getResources();
