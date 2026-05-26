@@ -52,6 +52,14 @@ public final class DictionaryFactory {
         }
 
         if (locale.getISO3Language().equals("jpn")) {
+            final boolean hasDefaultWordList = DictionaryInfoUtils.isDictionaryAvailable(
+                context, locale);
+            // It makes sure that the first time keyboard comes up and the dictionaries are reset,
+            // the DB is populated with the appropriate values for each locale. Helps in downloading
+            // the dictionaries when the user enables and switches new languages before the
+            // DictionaryService runs.
+            BinaryDictionaryFileDumper.downloadDictIfNeverRequested(
+                    locale, context, hasDefaultWordList);
             return new DictionaryCollection(Dictionary.TYPE_MAIN, locale,
                     new JapaneseDictionary(Dictionary.TYPE_MAIN, locale));
         }
