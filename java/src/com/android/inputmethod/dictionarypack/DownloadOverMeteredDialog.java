@@ -80,7 +80,8 @@ public final class DownloadOverMeteredDialog extends Activity {
     @SuppressWarnings("unused")
     public void onClickAllow(final View v) {
         UpdateHandler.setDownloadOverMeteredSetting(this, true);
-        UpdateHandler.installIfNeverRequested(this, mClientId, mWordListToDownload);
+        UpdateHandler.installIfNeverRequested(this, mClientId, mWordListToDownload,
+                false /* mayPrompt */);
         finish();
     }
 }

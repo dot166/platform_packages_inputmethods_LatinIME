@@ -908,9 +908,9 @@ public final class UpdateHandler {
     // list because it may only install the latest version we know about for this specific
     // word list ID / client ID combination.
     public static void installIfNeverRequested(final Context context, final String clientId,
-            final String wordlistId) {
+            final String wordlistId, final boolean mayPrompt) {
         Log.i(TAG, "installIfNeverRequested() : ClientId = " + clientId
-                + " : WordListId = " + wordlistId);
+                + " : WordListId = " + wordlistId + " : MayPrompt = " + mayPrompt);
         final String[] idArray = wordlistId.split(DictionaryProvider.ID_CATEGORY_SEPARATOR);
         // If we have a new-format dictionary id (category:manual_id), then use the
         // specified category. Otherwise, it is a main dictionary, so force the
@@ -943,6 +943,17 @@ public final class UpdateHandler {
             return;
         }
 
+        if (mayPrompt
+                && DOWNLOAD_OVER_METERED_SETTING_UNKNOWN
+                        == getDownloadOverMeteredSetting(context)) {
+            final ConnectivityManager cm =
+                    (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            if (ConnectivityManagerCompatUtils.isActiveNetworkMetered(cm)) {
+                showDictionaryAvailableNotification(context, clientId, installCandidate);
+                return;
+            }
+        }
+
         // We decided against prompting the user for a decision. This may be because we were
         // explicitly asked not to, or because we are currently on wi-fi anyway, or because we
         // already know the answer to the question. We'll enqueue a request ; StartDownloadAction
@@ -960,11 +971,11 @@ public final class UpdateHandler {
 
         // We are in a content provider: we can't do any UI at all. We have to defer the displaying
         // itself to the service. Also, we only display this when the user does not have a
-        // dictionary for this language already. During setup wizard, however, this UI is
-        // suppressed.
+        // dictionary for this language already: we know that from the mayPrompt argument.
+        // During setup wizard, however, this UI is suppressed.
         final boolean deviceProvisioned = Settings.Global.getInt(context.getContentResolver(),
                 Settings.Global.DEVICE_PROVISIONED, 0) != 0;
-        if (deviceProvisioned) {
+        if (deviceProvisioned && mayPrompt) {
             final Intent intent = new Intent();
             intent.setClass(context, DictionaryService.class);
             intent.setAction(DictionaryService.SHOW_DOWNLOAD_TOAST_INTENT_ACTION);
