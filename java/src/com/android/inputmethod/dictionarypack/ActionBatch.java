@@ -25,6 +25,7 @@ import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.android.inputmethod.compat.DownloadManagerCompatUtils;
 import com.android.inputmethod.latin.BinaryDictionaryFileDumper;
 import com.android.inputmethod.latin.R;
 import com.android.inputmethod.latin.common.LocaleUtils;
@@ -85,7 +86,7 @@ public final class ActionBatch {
          * Execute this action NOW.
          * @param context the context to get system services, resources, databases
          */
-        void execute(final Context context);
+        public void execute(final Context context);
     }
 
     /**
@@ -97,10 +98,13 @@ public final class ActionBatch {
         private final String mClientId;
         // The data to download. May not be null.
         final WordListMetadata mWordList;
-        public StartDownloadAction(final String clientId, final WordListMetadata wordList) {
+        final boolean mForceStartNow;
+        public StartDownloadAction(final String clientId,
+                final WordListMetadata wordList, final boolean forceStartNow) {
             DebugLogUtils.l("New download action for client ", clientId, " : ", wordList);
             mClientId = clientId;
             mWordList = wordList;
+            mForceStartNow = forceStartNow;
         }
 
         @Override
@@ -139,7 +143,28 @@ public final class ActionBatch {
             final Request request = new Request(uri);
 
             final Resources res = context.getResources();
-            request.setAllowedNetworkTypes(Request.NETWORK_WIFI | Request.NETWORK_MOBILE);
+            if (!mForceStartNow) {
+                if (DownloadManagerCompatUtils.hasSetAllowedOverMetered()) {
+                    final boolean allowOverMetered;
+                    switch (UpdateHandler.getDownloadOverMeteredSetting(context)) {
+                    case UpdateHandler.DOWNLOAD_OVER_METERED_DISALLOWED:
+                        // User said no: don't allow.
+                        allowOverMetered = false;
+                        break;
+                    case UpdateHandler.DOWNLOAD_OVER_METERED_ALLOWED:
+                        // User said yes: allow.
+                        allowOverMetered = true;
+                        break;
+                    default: // UpdateHandler.DOWNLOAD_OVER_METERED_SETTING_UNKNOWN
+                        // Don't know: use the default value from configuration.
+                        allowOverMetered = res.getBoolean(R.bool.allow_over_metered);
+                    }
+                    DownloadManagerCompatUtils.setAllowedOverMetered(request, allowOverMetered);
+                } else {
+                    request.setAllowedNetworkTypes(Request.NETWORK_WIFI);
+                }
+                request.setAllowedOverRoaming(res.getBoolean(R.bool.allow_over_roaming));
+            } // if mForceStartNow, then allow all network types and roaming, which is the default.
             request.setTitle(mWordList.mDescription);
             request.setNotificationVisibility(
                     res.getBoolean(R.bool.display_notification_for_auto_update)
