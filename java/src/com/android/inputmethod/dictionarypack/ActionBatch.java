@@ -141,7 +141,9 @@ public final class ActionBatch {
             final Resources res = context.getResources();
             request.setAllowedNetworkTypes(Request.NETWORK_WIFI | Request.NETWORK_MOBILE);
             request.setTitle(mWordList.mDescription);
-            request.setNotificationVisibility(Request.VISIBILITY_HIDDEN);
+            request.setNotificationVisibility(
+                    res.getBoolean(R.bool.display_notification_for_auto_update)
+                            ? Request.VISIBILITY_VISIBLE : Request.VISIBILITY_HIDDEN);
             request.setVisibleInDownloadsUi(
                     res.getBoolean(R.bool.dict_downloads_visible_in_download_UI));
 
