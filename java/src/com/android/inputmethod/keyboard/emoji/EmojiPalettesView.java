@@ -30,6 +30,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import android.util.AttributeSet;
 import android.util.Pair;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -222,18 +223,20 @@ public final class EmojiPalettesView extends LinearLayout implements OnTabChange
         mTabHost2.setup();
         final TabHost.TabSpec tspec20 = mTabHost2.newTabSpec("All");
         tspec20.setContent(R.id.kaomoji_keyboard_dummy);
-        final Button button = new Button(getContext());
-        button.setText(R.string.all);
-        button.setBackground(null);
-        tspec20.setIndicator(button);
+        final TextView text = new TextView(getContext());
+        text.setText(R.string.all);
+        text.setGravity(Gravity.CENTER);
+        text.setBackgroundColor(mCategoryPageIndicatorBackground);
+        tspec20.setIndicator(text);
         mTabHost2.addTab(tspec20);
         for (int i = 0; i < KaomojiUtils.categoryName.size(); i++) {
             final TabHost.TabSpec tspec21 = mTabHost2.newTabSpec(KaomojiUtils.categoryName.get(i));
             tspec21.setContent(R.id.kaomoji_keyboard_dummy);
-            final Button button2 = new Button(getContext());
-            button2.setText(KaomojiUtils.categoryNameString.get(i));
-            button2.setBackground(null);
-            tspec21.setIndicator(button2);
+            final TextView text2 = new TextView(getContext());
+            text2.setText(KaomojiUtils.categoryNameString.get(i));
+            text2.setGravity(Gravity.CENTER);
+            text2.setBackgroundColor(mCategoryPageIndicatorBackground);
+            tspec21.setIndicator(text2);
             mTabHost2.addTab(tspec21);
         }
         mTabHost2.setOnTabChangedListener(new OnTabChangeListener() {
@@ -383,8 +386,8 @@ public final class EmojiPalettesView extends LinearLayout implements OnTabChange
     }
 
     private void applyTextColor(View v, int color) {
-        if (v instanceof Button) {
-            ((Button) v).setTextColor(color);
+        if (v instanceof TextView) {
+            ((TextView) v).setTextColor(color);
         }
     }
 
