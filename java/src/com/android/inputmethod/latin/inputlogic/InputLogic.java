@@ -509,9 +509,9 @@ public final class InputLogic {
                 return onCodeInput(settingsValues, event, keyboardShiftMode, currentKeyboardScriptId, handler, true);
             } else {
                 CharSequence text = event.getTextToCommit();
-                if (text != null && !text.isEmpty()) {
+                if (text != null && text.length() != 0) {
                     for (int i = 0; i < text.length(); i++) {
-                        char c = Character.toLowerCase(text.charAt(i));
+                        char c = text.charAt(i);
                         // Skip keys that shouldn't go to Mozc
                         if (!MozcEngine.getInstance().isAllowedChar(text)) {
                             // safe to return here, as this should only be one char anyway
