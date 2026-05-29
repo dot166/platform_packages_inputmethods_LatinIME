@@ -30,6 +30,7 @@ import android.os.ParcelFileDescriptor;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.android.inputmethod.latin.BuildConfig;
 import com.android.inputmethod.latin.R;
 import com.android.inputmethod.latin.common.LocaleUtils;
 import com.android.inputmethod.latin.utils.DebugLogUtils;
@@ -51,7 +52,7 @@ public final class DictionaryProvider extends ContentProvider {
     public static final boolean DEBUG = false;
 
     public static final Uri CONTENT_URI =
-            Uri.parse(ContentResolver.SCHEME_CONTENT + "://" + DictionaryPackConstants.AUTHORITY);
+            Uri.parse(ContentResolver.SCHEME_CONTENT + "://" + BuildConfig.DICTIONARY_AUTHORITY);
     private static final String QUERY_PARAMETER_MAY_PROMPT_USER = "mayPrompt";
     private static final String QUERY_PARAMETER_TRUE = "true";
     private static final String QUERY_PARAMETER_DELETE_RESULT = "result";
@@ -68,14 +69,14 @@ public final class DictionaryProvider extends ContentProvider {
     private static final UriMatcher sUriMatcherV2 = new UriMatcher(NO_MATCH);
     static
     {
-        sUriMatcherV1.addURI(DictionaryPackConstants.AUTHORITY, "list", DICTIONARY_V1_WHOLE_LIST);
-        sUriMatcherV1.addURI(DictionaryPackConstants.AUTHORITY, "*", DICTIONARY_V1_DICT_INFO);
-        sUriMatcherV2.addURI(DictionaryPackConstants.AUTHORITY, "*/metadata",
+        sUriMatcherV1.addURI(BuildConfig.DICTIONARY_AUTHORITY, "list", DICTIONARY_V1_WHOLE_LIST);
+        sUriMatcherV1.addURI(BuildConfig.DICTIONARY_AUTHORITY, "*", DICTIONARY_V1_DICT_INFO);
+        sUriMatcherV2.addURI(BuildConfig.DICTIONARY_AUTHORITY, "*/metadata",
                 DICTIONARY_V2_METADATA);
-        sUriMatcherV2.addURI(DictionaryPackConstants.AUTHORITY, "*/list", DICTIONARY_V2_WHOLE_LIST);
-        sUriMatcherV2.addURI(DictionaryPackConstants.AUTHORITY, "*/dict/*",
+        sUriMatcherV2.addURI(BuildConfig.DICTIONARY_AUTHORITY, "*/list", DICTIONARY_V2_WHOLE_LIST);
+        sUriMatcherV2.addURI(BuildConfig.DICTIONARY_AUTHORITY, "*/dict/*",
                 DICTIONARY_V2_DICT_INFO);
-        sUriMatcherV2.addURI(DictionaryPackConstants.AUTHORITY, "*/datafile/*",
+        sUriMatcherV2.addURI(BuildConfig.DICTIONARY_AUTHORITY, "*/datafile/*",
                 DICTIONARY_V2_DATAFILE);
     }
 

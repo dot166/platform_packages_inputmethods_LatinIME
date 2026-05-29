@@ -31,12 +31,6 @@ public class DictionaryPackConstants {
     private static final String DICTIONARY_DOMAIN = "com.android.inputmethod.dictionarypack.aosp";
 
     /**
-     * Authority for the ContentProvider protocol.
-     */
-    // TODO: find some way to factorize this string with the one in the resources
-    public static final String AUTHORITY = DICTIONARY_DOMAIN;
-
-    /**
      * The action of the intent for publishing that new dictionary data is available.
      */
     // TODO: make this different across different packages. A suggested course of action is

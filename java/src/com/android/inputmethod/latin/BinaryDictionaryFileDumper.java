@@ -109,7 +109,7 @@ public final class BinaryDictionaryFileDumper {
      */
     public static Uri.Builder getProviderUriBuilder(final String path) {
         return new Uri.Builder().scheme(ContentResolver.SCHEME_CONTENT)
-                .authority(DictionaryPackConstants.AUTHORITY).appendPath(path);
+                .authority(BuildConfig.DICTIONARY_AUTHORITY).appendPath(path);
     }
 
     /**

@@ -36,7 +36,7 @@
                               .setPackage("com.android.inputmethod.latin"));
                       }
          </pre> -->
-    <permission android:name="com.android.inputmethod.latin.HIDE_SOFT_INPUT"
+    <permission android:name="${applicationId}.HIDE_SOFT_INPUT"
          android:protectionLevel="signature"/>
 
     <!-- To query enabled input methods. -->

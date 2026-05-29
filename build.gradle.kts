@@ -1,22 +1,35 @@
+import com.android.build.api.dsl.CompileSdkVersion
 import com.google.protobuf.gradle.*
 plugins {
     id("com.android.application") version "9.2.1"
     id("com.google.protobuf") version "0.10.0"
 }
 
+val applicationIdRoot = "com.android.inputmethod.latin"
+val dictionaryPackDomainRoot = "com.android.inputmethod.dictionarypack.aosp"
+
 android {
-    compileSdk = 36
-    namespace = "com.android.inputmethod.latin"
+    compileSdk {
+        version = release(36) {
+            minorApiLevel = 1
+        }
+    }
+    namespace = applicationIdRoot
 
     defaultConfig {
         minSdk = 30
         targetSdk = 34
         versionName = "1.0"
 
-        applicationId = "com.android.inputmethod.latin"
+        applicationId = applicationIdRoot
         vectorDrawables.useSupportLibrary = false
 
         signingConfig = signingConfigs.getByName("debug")
+    }
+
+    buildFeatures {
+        buildConfig = true
+        resValues = true
     }
 
     signingConfigs {
@@ -28,12 +41,19 @@ android {
     buildTypes {
         getByName("debug") {
             isMinifyEnabled = false
+            applicationIdSuffix = ".dev"
+            resValue("string", "dictionary_pack_client_id", "$applicationIdRoot$applicationIdSuffix")
+            resValue("string", "authority", "$dictionaryPackDomainRoot$applicationIdSuffix")
+            buildConfigField("String", "DICTIONARY_AUTHORITY", "\"$dictionaryPackDomainRoot$applicationIdSuffix\"")
         }
         getByName("release") {
             proguardFiles(
                     getDefaultProguardFile("proguard-android-optimize.txt"),
                     "proguard.flags"
             )
+            resValue("string", "dictionary_pack_client_id", applicationIdRoot)
+            resValue("string", "authority", dictionaryPackDomainRoot)
+            buildConfigField("String", "DICTIONARY_AUTHORITY", "\"$dictionaryPackDomainRoot\"")
         }
     }
 
@@ -69,6 +89,7 @@ android {
 
     lint {
         checkReleaseBuilds = false
+        baseline = file("java/lint-baseline.xml")
     }
 }
 
