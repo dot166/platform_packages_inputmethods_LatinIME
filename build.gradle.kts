@@ -67,13 +67,13 @@ android {
     sourceSets {
         getByName("main") {
             proto {
-                srcDir("java/proto-gradle")
+                srcDir("java/proto")
             }
             jniLibs.directories.add("java/lib")
             assets.directories.add("java/assets")
             res.directories.add("java/res")
             java.directories.addAll(listOf("common/src", "java/src"))
-            manifest.srcFile("java/AndroidManifest-gradle.xml")
+            manifest.srcFile("java/AndroidManifest.xml")
         }
     }
 
