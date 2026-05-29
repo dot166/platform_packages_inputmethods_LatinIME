@@ -16,6 +16,10 @@
 
 package com.android.inputmethod.dictionarypack;
 
+import static androidx.core.app.NotificationCompat.CATEGORY_RECOMMENDATION;
+import static androidx.core.app.NotificationCompat.PRIORITY_LOW;
+import static androidx.core.app.NotificationCompat.VISIBILITY_SECRET;
+
 import android.app.DownloadManager;
 import android.app.DownloadManager.Query;
 import android.app.DownloadManager.Request;
@@ -36,13 +40,11 @@ import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.android.inputmethod.compat.ConnectivityManagerCompatUtils;
-import com.android.inputmethod.compat.DownloadManagerCompatUtils;
-import com.android.inputmethod.compat.NotificationCompatUtils;
+import androidx.core.app.NotificationCompat;
+
 import com.android.inputmethod.latin.R;
 import com.android.inputmethod.latin.common.LocaleUtils;
 import com.android.inputmethod.latin.makedict.FormatSpec;
-import com.android.inputmethod.latin.utils.ApplicationUtils;
 import com.android.inputmethod.latin.utils.DebugLogUtils;
 
 import java.io.File;
@@ -240,12 +242,7 @@ public final class UpdateHandler {
         if (!updateNow) {
             final boolean allowedOverMetered = res.getBoolean(R.bool.allow_over_metered);
             // If we don't have to update NOW, then only do it over non-metered connections.
-            if (DownloadManagerCompatUtils.hasSetAllowedOverMetered()) {
-                DownloadManagerCompatUtils.setAllowedOverMetered(metadataRequest,
-                        allowedOverMetered);
-            } else if (!allowedOverMetered) {
-                metadataRequest.setAllowedNetworkTypes(Request.NETWORK_WIFI);
-            }
+            metadataRequest.setAllowedOverMetered(allowedOverMetered);
             metadataRequest.setAllowedOverRoaming(res.getBoolean(R.bool.allow_over_roaming));
         }
 
@@ -898,7 +895,7 @@ public final class UpdateHandler {
                 : LocaleUtils.constructLocaleFromString(localeString).getDisplayLanguage();
         final String titleFormat = context.getString(R.string.dict_available_notification_title);
         final String notificationTitle = String.format(titleFormat, language);
-        final Notification.Builder builder = new Notification.Builder(context)
+        final NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
                 .setAutoCancel(true)
                 .setContentIntent(notificationIntent)
                 .setContentTitle(notificationTitle)
@@ -906,13 +903,12 @@ public final class UpdateHandler {
                 .setTicker(notificationTitle)
                 .setOngoing(false)
                 .setOnlyAlertOnce(true)
-                .setSmallIcon(R.drawable.ic_notify_dictionary);
-        NotificationCompatUtils.setColor(builder,
-                context.getResources().getColor(R.color.notification_accent_color));
-        NotificationCompatUtils.setPriorityToLow(builder);
-        NotificationCompatUtils.setVisibilityToSecret(builder);
-        NotificationCompatUtils.setCategoryToRecommendation(builder);
-        final Notification notification = NotificationCompatUtils.build(builder);
+                .setSmallIcon(R.drawable.ic_notify_dictionary)
+                .setColor(context.getResources().getColor(R.color.notification_accent_color, context.getTheme()))
+                .setPriority(PRIORITY_LOW)
+                .setVisibility(VISIBILITY_SECRET)
+                .setCategory(CATEGORY_RECOMMENDATION);
+        final Notification notification = builder.build();
         notificationManager.notify(DICT_AVAILABLE_NOTIFICATION_ID, notification);
     }
 
@@ -973,7 +969,7 @@ public final class UpdateHandler {
                         == getDownloadOverMeteredSetting(context)) {
             final ConnectivityManager cm =
                     (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-            if (ConnectivityManagerCompatUtils.isActiveNetworkMetered(cm)) {
+            if (cm.isActiveNetworkMetered()) {
                 showDictionaryAvailableNotification(context, clientId, installCandidate);
                 return;
             }

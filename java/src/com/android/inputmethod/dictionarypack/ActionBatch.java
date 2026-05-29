@@ -25,7 +25,6 @@ import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.android.inputmethod.compat.DownloadManagerCompatUtils;
 import com.android.inputmethod.latin.BinaryDictionaryFileDumper;
 import com.android.inputmethod.latin.R;
 import com.android.inputmethod.latin.common.LocaleUtils;
@@ -144,25 +143,21 @@ public final class ActionBatch {
 
             final Resources res = context.getResources();
             if (!mForceStartNow) {
-                if (DownloadManagerCompatUtils.hasSetAllowedOverMetered()) {
-                    final boolean allowOverMetered;
-                    switch (UpdateHandler.getDownloadOverMeteredSetting(context)) {
-                    case UpdateHandler.DOWNLOAD_OVER_METERED_DISALLOWED:
-                        // User said no: don't allow.
-                        allowOverMetered = false;
-                        break;
-                    case UpdateHandler.DOWNLOAD_OVER_METERED_ALLOWED:
-                        // User said yes: allow.
-                        allowOverMetered = true;
-                        break;
-                    default: // UpdateHandler.DOWNLOAD_OVER_METERED_SETTING_UNKNOWN
-                        // Don't know: use the default value from configuration.
-                        allowOverMetered = res.getBoolean(R.bool.allow_over_metered);
-                    }
-                    DownloadManagerCompatUtils.setAllowedOverMetered(request, allowOverMetered);
-                } else {
-                    request.setAllowedNetworkTypes(Request.NETWORK_WIFI);
+                final boolean allowOverMetered;
+                switch (UpdateHandler.getDownloadOverMeteredSetting(context)) {
+                case UpdateHandler.DOWNLOAD_OVER_METERED_DISALLOWED:
+                    // User said no: don't allow.
+                    allowOverMetered = false;
+                    break;
+                case UpdateHandler.DOWNLOAD_OVER_METERED_ALLOWED:
+                    // User said yes: allow.
+                    allowOverMetered = true;
+                    break;
+                default: // UpdateHandler.DOWNLOAD_OVER_METERED_SETTING_UNKNOWN
+                    // Don't know: use the default value from configuration.
+                    allowOverMetered = res.getBoolean(R.bool.allow_over_metered);
                 }
+                request.setAllowedOverMetered(allowOverMetered);
                 request.setAllowedOverRoaming(res.getBoolean(R.bool.allow_over_roaming));
             } // if mForceStartNow, then allow all network types and roaming, which is the default.
             request.setTitle(mWordList.mDescription);
