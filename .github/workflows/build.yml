@@ -68,4 +68,11 @@ jobs:
           rm -rf mozc
           git add .
           git diff-index --quiet HEAD || git commit -m "LatinIME: Updated libmozc"
+      - name: Update Dictionaries
+        run: |
+          cd .github/gen-dicts
+          cargo run
+          cd ../..
+          git add .
+          git diff-index --quiet HEAD || git commit -m "LatinIME: Updated libmozc"
           git push
